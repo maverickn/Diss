@@ -58,14 +58,6 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/libs/cloudsim-4.0.jar</systemPath>
         </dependency>
-        <dependency>
-            <groupId>cloudsim-examples</groupId>
-            <artifactId>cloudsim-examples</artifactId>
-            <version>4.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/libs/cloudsim-examples-4.0.jar</systemPath>
-        </dependency>
     </dependencies>
-
 
 </project>
