@@ -1,6 +1,7 @@
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.power.*;
+import policy.HostPowerModeSelectionPolicyAgent;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -80,10 +81,10 @@ public class Runner {
             CloudSim.stopSimulation();
             Environment.printResults(datacenter, vmList, lastClock, experimentName, Parameters.OUTPUT_CSV, outputFolder);
 
-            /*Agent a = new Agent(new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
+            /*HostPowerModeSelectionPolicyAgent a = new HostPowerModeSelectionPolicyAgent(new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
             int firstState = a.saveState(1234567890);
             int secondState = a.saveState(1234567890);
-            int thirdState = a.saveState(a.getState());
+            int thirdState = a.saveState(a.observeState());
 
             System.out.println(firstState);
             System.out.println(secondState);
@@ -93,7 +94,11 @@ public class Runner {
 
             for (int i = 0; i < qTable.size(); i++) {
                 for (int j = 0; j < qTable.get(0).size(); j++) {
-                    System.out.print(qTable.get(i).get(j) + "\t");
+                    if (qTable.get(i).get(j) == Double.MAX_VALUE) {
+                        System.out.print("--\t");
+                    } else {
+                        System.out.print(qTable.get(i).get(j) + "\t");
+                    }
                 }
                 System.out.print("\n");
             }

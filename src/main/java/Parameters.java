@@ -1,8 +1,10 @@
+import models.power.DellPowerEdgeR640;
+import models.power.DellPowerEdgeR740;
+import models.power.DellPowerEdgeR830;
+import models.power.DellPowerEdgeR940;
 import org.cloudbus.cloudsim.power.models.PowerModel;
-import powerModels.*;
 
 public class Parameters {
-
 
 	//matisse.net/bitcalc/
 	public final static boolean ENABLE_OUTPUT = true;

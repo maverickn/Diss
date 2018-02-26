@@ -9,7 +9,7 @@ import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.cloudbus.cloudsim.util.MathUtil;
-import utilizationModels.UtilizationModelInMemory;
+import models.utilization.UtilizationModelInMemory;
 
 public class Environment {
 

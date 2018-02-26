@@ -1,3 +1,5 @@
+package policy;
+
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.HostDynamicWorkload;
 import org.cloudbus.cloudsim.HostStateHistoryEntry;
@@ -7,7 +9,7 @@ import org.cloudbus.cloudsim.power.PowerVmSelectionPolicy;
 
 import java.util.*;
 
-public class Agent extends PowerVmAllocationPolicyMigrationAbstract{
+public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrationAbstract {
 
     private double learningRate;
 
@@ -29,9 +31,11 @@ public class Agent extends PowerVmAllocationPolicyMigrationAbstract{
 
     private final List<Double> powerConsumptionList = new LinkedList<>();
 
-    public Agent(double learningRate, double discountFactor, double cofImportanceSla, double cofImportancePower,
-                 PowerVmAllocationPolicyMigrationAbstract fallbackVmAllocationPolicy,
-                 PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
+    private Double oldQValue;
+
+    public HostPowerModeSelectionPolicyAgent(double learningRate, double discountFactor, double cofImportanceSla, double cofImportancePower,
+                                             PowerVmAllocationPolicyMigrationAbstract fallbackVmAllocationPolicy,
+                                             PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
         super(hostList, vmSelectionPolicy);
 
         setLearningRate(learningRate);
@@ -44,16 +48,16 @@ public class Agent extends PowerVmAllocationPolicyMigrationAbstract{
         setActionsList();
     }
 
-    public Agent(PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
+    public HostPowerModeSelectionPolicyAgent(PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
         super(hostList, vmSelectionPolicy);
         setActionsList();
     }
 
     /**
-     * Get cpu utilization from hosts, convert utilization values to intervals
+     * Observe state (get cpu utilization from hosts, convert utilization values to intervals)
      * @return hashcode of hosts state
      */
-    private int getState() {
+    private int observeState() {
         StringBuilder convertedCpuUtilizationList = new StringBuilder();
         double cpuUtil;
         for (PowerHost host : this.<PowerHost> getHostList()) {
@@ -74,7 +78,7 @@ public class Agent extends PowerVmAllocationPolicyMigrationAbstract{
      * @param state state
      * @return index of action with min Q-value
      */
-    private int getActionPolicy(int state) {
+    private int getBestActionPolicy(int state) {
         int index = getStatesList().indexOf(state);
         double minQvalue = Collections.min(getQTable().get(index));
         return getQTable().get(index).indexOf(minQvalue);
@@ -90,6 +94,7 @@ public class Agent extends PowerVmAllocationPolicyMigrationAbstract{
         getPower();
         int actionsCount = getActionsList().size();
         if (getStatesList().isEmpty()) {
+            setActionsList();
             getStatesList().add(state);
             getQTable().add(new ArrayList<>());
             for (int i = 0; i < actionsCount; i++) {
@@ -155,6 +160,7 @@ public class Agent extends PowerVmAllocationPolicyMigrationAbstract{
         List<Double> slaViolationTimeList = getSlaViolationTimeList();
         Collections.reverse(slaViolationTimeList);
         if (slaViolationTimeList.size() < 3) {
+            // TODO: 26.02.2018 what to return
             return Double.MAX_VALUE;
         } else {
             return ((slaViolationTimeList.get(0) - slaViolationTimeList.get(1))/
@@ -170,14 +176,35 @@ public class Agent extends PowerVmAllocationPolicyMigrationAbstract{
         List<Double> powerList = getPowerConsumptionList();
         Collections.reverse(powerList);
         if (powerList.size() < 3) {
+            // TODO: 26.02.2018 what to return
             return Double.MAX_VALUE;
         } else {
             return ((powerList.get(0) - powerList.get(1))/(powerList.get(1) - powerList.get(2)));
         }
     }
 
+    /**
+     * Get total penalty (SLA violation penalty + power consumption penalty)
+     * @return total penalty
+     */
     private double getPenalty() {
         return (cofImportanceSla * getSlaViolationPenalty() + cofImportancePower * getPowerConsumptionPenalty());
+    }
+
+    /**
+     * Get new Q-value
+     * @param penalty total penalty
+     * @param estimateOptimalFutureValue estimate of optimal future value
+     * @return new Q-value
+     */
+    private double getNewQValue(double penalty, double estimateOptimalFutureValue) {
+        return ((1 - learningRate) * oldQValue + learningRate * (penalty + discountFactor * estimateOptimalFutureValue));
+    }
+
+    private boolean isSwitchedOffHost(PowerHost host) {
+        if (host.getUtilizationOfCpu() == 0) {
+            return true;
+        } else return false;
     }
 
     public void setLearningRate(double learningRate) {
@@ -229,11 +256,9 @@ public class Agent extends PowerVmAllocationPolicyMigrationAbstract{
         return statesList;
     }
 
-    public void setActionsList() {
-        int size = this.getHostList().size();
-        for (int i = 0; i < size; i++) {
-            getActionsList().add(true);
-            getActionsList().add(false);
+    private void setActionsList() {
+        for (PowerHost host: this.<PowerHost>getHostList()) {
+            getActionsList().add(host.getId(), isSwitchedOffHost(host));
         }
     }
 

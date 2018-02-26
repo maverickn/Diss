@@ -1,4 +1,4 @@
-package utilizationModels;
+package models.utilization;
 
 import org.cloudbus.cloudsim.UtilizationModel;
 

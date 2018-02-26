@@ -1,4 +1,4 @@
-package powerModels;
+package models.power;
 
 import org.cloudbus.cloudsim.power.models.PowerModelSpecPower;
 
