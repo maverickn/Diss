@@ -19,8 +19,6 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
 
     private double cofImportancePower;
 
-    private PowerVmAllocationPolicyMigrationAbstract fallbackVmAllocationPolicy;
-
     private final List<Integer> statesList = new LinkedList<>();
 
     private final List<Boolean> actionsList = new ArrayList<>();
@@ -34,7 +32,6 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     private Double oldQValue;
 
     public HostPowerModeSelectionPolicyAgent(double learningRate, double discountFactor, double cofImportanceSla, double cofImportancePower,
-                                             PowerVmAllocationPolicyMigrationAbstract fallbackVmAllocationPolicy,
                                              PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
         super(hostList, vmSelectionPolicy);
 
@@ -43,14 +40,33 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         setCofImportanceSla(cofImportanceSla);
         setCofImportancePower(cofImportancePower);
 
-        setFallbackVmAllocationPolicy(fallbackVmAllocationPolicy);
-        setVmSelectionPolicy(vmSelectionPolicy);
         setActionsList();
     }
 
     public HostPowerModeSelectionPolicyAgent(PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
         super(hostList, vmSelectionPolicy);
         setActionsList();
+    }
+
+    public Map<Integer, Boolean> getHostPowerMode() {
+        Map<Integer, Boolean> idAndHostPowerMode = new HashMap<>();
+
+        int state = observeState();
+        int stateIndex = saveState(state);
+        double minQValue = getBestActionPolicy(getQTable().get(stateIndex));
+
+        int actionIndex;
+        if (minQValue == Double.MAX_VALUE) {
+            Random rand = new Random();
+            actionIndex = rand.nextInt(getActionsList().size());
+        } else {
+            actionIndex = getQTable().get(stateIndex).indexOf(minQValue);
+
+        }
+        boolean powerMode = getActionsList().get(actionIndex);
+        idAndHostPowerMode.put(actionIndex, powerMode);
+        getActionsList().add(actionIndex, !powerMode);
+        return idAndHostPowerMode;
     }
 
     /**
@@ -74,14 +90,12 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Best action choice policy
-     * @param state state
-     * @return index of action with min Q-value
+     * Get min Q-value for state
+     * @param qValues Q-values for state
+     * @return min Q-value
      */
-    private int getBestActionPolicy(int state) {
-        int index = getStatesList().indexOf(state);
-        double minQvalue = Collections.min(getQTable().get(index));
-        return getQTable().get(index).indexOf(minQvalue);
+    private double getBestActionPolicy(List<Double> qValues) {
+        return Collections.min(qValues);
     }
 
     /**
@@ -94,7 +108,6 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         getPower();
         int actionsCount = getActionsList().size();
         if (getStatesList().isEmpty()) {
-            setActionsList();
             getStatesList().add(state);
             getQTable().add(new ArrayList<>());
             for (int i = 0; i < actionsCount; i++) {
@@ -242,14 +255,6 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     @Override
     protected boolean isHostOverUtilized(PowerHost powerHost) {
         return false;
-    }
-
-    public void setFallbackVmAllocationPolicy(PowerVmAllocationPolicyMigrationAbstract fallbackVmAllocationPolicy) {
-        this.fallbackVmAllocationPolicy = fallbackVmAllocationPolicy;
-    }
-
-    public PowerVmAllocationPolicyMigrationAbstract getFallbackVmAllocationPolicy() {
-        return fallbackVmAllocationPolicy;
     }
 
     public List<Integer> getStatesList() {

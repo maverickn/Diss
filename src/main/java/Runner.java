@@ -111,7 +111,9 @@ public class Runner {
             List<Boolean> listActions = a.getActionsList();
             for (int i = 0; i < listActions.size(); i++) {
                 System.out.println(i + "\t" + listActions.get(i));
-            }*/
+            }
+            System.out.print(a.getPowerConsumptionList().toString());
+            System.out.print(a.getSlaViolationTimeList().toString());*/
         } catch (Exception e) {
             e.printStackTrace();
             Log.printLine("The simulation has been terminated due to an unexpected error");
