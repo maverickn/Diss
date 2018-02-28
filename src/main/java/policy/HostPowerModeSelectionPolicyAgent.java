@@ -4,7 +4,6 @@ import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.HostDynamicWorkload;
 import org.cloudbus.cloudsim.HostStateHistoryEntry;
 import org.cloudbus.cloudsim.power.PowerHost;
-import org.cloudbus.cloudsim.power.PowerVmAllocationPolicyMigrationAbstract;
 import org.cloudbus.cloudsim.power.PowerVmSelectionPolicy;
 
 import java.util.*;
@@ -19,53 +18,113 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
 
     private double cofImportancePower;
 
-    private final List<Integer> statesList = new LinkedList<>();
+    private final List<Integer> statesList = new ArrayList<>();
 
-    private final List<Boolean> actionsList = new ArrayList<>();
+    private List<Boolean> actionsList = new ArrayList<>();
 
     private List<List<Double>> qTable = new ArrayList<>();
 
-    private final List<Double> slaViolationTimeList = new LinkedList<>();
+    private final List<Double> slaViolationTimeList = new ArrayList<>();
 
-    private final List<Double> powerConsumptionList = new LinkedList<>();
+    private final List<Double> powerConsumptionList = new ArrayList<>();
 
-    private Double oldQValue;
+    private Double oldQValue = 0.0;
+
+    private int counter = 0;
 
     public HostPowerModeSelectionPolicyAgent(double learningRate, double discountFactor, double cofImportanceSla, double cofImportancePower,
                                              PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
         super(hostList, vmSelectionPolicy);
-
         setLearningRate(learningRate);
         setDiscountFactor(discountFactor);
         setCofImportanceSla(cofImportanceSla);
         setCofImportancePower(cofImportancePower);
-
-        setActionsList();
     }
 
-    public HostPowerModeSelectionPolicyAgent(PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
-        super(hostList, vmSelectionPolicy);
-        setActionsList();
-    }
-
+    /**
+     * Get host id and power mode
+     * @return
+     */
     public Map<Integer, Boolean> getHostPowerMode() {
         Map<Integer, Boolean> idAndHostPowerMode = new HashMap<>();
+        Random rand = new Random();
+        int probality = (rand.nextInt(10) + 1);
 
         int state = observeState();
+        System.out.println("state: " + state);
+
         int stateIndex = saveState(state);
-        double minQValue = getBestActionPolicy(getQTable().get(stateIndex));
+        System.out.println("stateIndex: " + stateIndex);
+
+        double penalty = getPenalty();
+        System.out.println("penalty: " + penalty);
+
+        double minQValue = Collections.min(getQTable().get(stateIndex));
+        System.out.println("minQValue: " + minQValue);
+
+        for (int i = 0; i < qTable.size(); i++) {
+            for (int j = 0; j < qTable.get(0).size(); j++) {
+                if (qTable.get(i).get(j) == Double.MAX_VALUE) {
+                    System.out.print("-\t");
+                } else {
+                    System.out.print(qTable.get(i).get(j) + "\t");
+                }
+            }
+            System.out.print("\n");
+        }
+
+        System.out.println("getSlaViolationTimeList:");
+        for (int i = 0; i < getSlaViolationTimeList().size(); i++) {
+            System.out.println(i + "\t" + getSlaViolationTimeList().get(i));
+        }
+
+        System.out.println("getPowerConsumptionList:");
+        for (int i = 0; i < getPowerConsumptionList().size(); i++) {
+            System.out.println(i + "\t" + getPowerConsumptionList().get(i));
+        }
 
         int actionIndex;
-        if (minQValue == Double.MAX_VALUE) {
-            Random rand = new Random();
+        if (minQValue == Double.MAX_VALUE || probality == 1) {
             actionIndex = rand.nextInt(getActionsList().size());
         } else {
             actionIndex = getQTable().get(stateIndex).indexOf(minQValue);
-
         }
+        System.out.println("actionIndex: " + actionIndex);
+
+        double newQvalue = getNewQValue(penalty, minQValue);
+        System.out.println("newQvalue: " + newQvalue);
+
+        getQTable().get(stateIndex).set(actionIndex, newQvalue);
+        for (int i = 0; i < qTable.size(); i++) {
+            for (int j = 0; j < qTable.get(0).size(); j++) {
+                if (qTable.get(i).get(j) == Double.MAX_VALUE) {
+                    System.out.print("-\t");
+                } else {
+                    System.out.print(qTable.get(i).get(j) + "\t");
+                }
+            }
+            System.out.print("\n");
+        }
+
+        oldQValue = getQTable().get(stateIndex).get(actionIndex);
+
         boolean powerMode = getActionsList().get(actionIndex);
+        System.out.println("powerMode: " + powerMode);
+
         idAndHostPowerMode.put(actionIndex, powerMode);
-        getActionsList().add(actionIndex, !powerMode);
+        System.out.println("idAndHostPowerMode: " + idAndHostPowerMode);
+
+        getActionsList().set(actionIndex, !powerMode);
+        for (int i = 0; i < getActionsList().size(); i++) {
+            System.out.println(i + "\t" + getActionsList().get(i));
+        }
+
+        if (counter == 4) {
+            System.exit(0);
+        } else {
+            counter ++;
+        }
+
         return idAndHostPowerMode;
     }
 
@@ -77,6 +136,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         StringBuilder convertedCpuUtilizationList = new StringBuilder();
         double cpuUtil;
         for (PowerHost host : this.<PowerHost> getHostList()) {
+            // TODO: 28.02.2018 get sum of each resource utilization by each host (CPU, RAM, Bw, Storage) and convert to intervals
             cpuUtil = host.getUtilizationOfCpu();
             if (cpuUtil >= 0 || cpuUtil < 0.3) {
                 convertedCpuUtilizationList.append("1");
@@ -86,16 +146,9 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
                 convertedCpuUtilizationList.append("3");
             }
         }
+        getSlaViolationTime();
+        getTotalPower();
         return convertedCpuUtilizationList.hashCode();
-    }
-
-    /**
-     * Get min Q-value for state
-     * @param qValues Q-values for state
-     * @return min Q-value
-     */
-    private double getBestActionPolicy(List<Double> qValues) {
-        return Collections.min(qValues);
     }
 
     /**
@@ -104,13 +157,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * @return index of state in statesList
      */
     private int saveState(int state) {
-        getSlaViolationTime();
-        getPower();
-        int actionsCount = getActionsList().size();
         if (getStatesList().isEmpty()) {
+            setActionsList();
             getStatesList().add(state);
             getQTable().add(new ArrayList<>());
-            for (int i = 0; i < actionsCount; i++) {
+            for (int i = 0; i < getActionsList().size(); i++) {
                 getQTable().get(0).add(Double.MAX_VALUE);
             }
             return 0;
@@ -121,7 +172,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
             getStatesList().add(state);
             int index = getStatesList().indexOf(state);
             getQTable().add(new ArrayList<>());
-            for (int i = 0; i < actionsCount; i++) {
+            for (int i = 0; i < getActionsList().size(); i++) {
                 getQTable().get(index).add(Double.MAX_VALUE);
             }
             return index;
@@ -151,48 +202,41 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
                 previousIsActive = entry.isActive();
             }
         }
-        getSlaViolationTimeList().add(slaViolationTimePerHost);
+        if (getSlaViolationTimeList().isEmpty()) {
+            getSlaViolationTimeList().add(0.0);
+        } else {
+            getSlaViolationTimeList().add(slaViolationTimePerHost);
+        }
     }
 
     /**
      * Get total power per each host
      */
-    private void getPower() {
+    private void getTotalPower() {
         double totalPower = 0;
         for (PowerHost host : this.<PowerHost> getHostList()) {
             totalPower += host.getPower();
         }
-        getPowerConsumptionList().add(totalPower);
-    }
-
-    /**
-     * Get SLA violation penalty
-     * @return SLA violation penalty
-     */
-    private double getSlaViolationPenalty() {
-        List<Double> slaViolationTimeList = getSlaViolationTimeList();
-        Collections.reverse(slaViolationTimeList);
-        if (slaViolationTimeList.size() < 3) {
-            // TODO: 26.02.2018 what to return
-            return Double.MAX_VALUE;
+        if (getPowerConsumptionList().isEmpty()) {
+            getPowerConsumptionList().add(0.0);
         } else {
-            return ((slaViolationTimeList.get(0) - slaViolationTimeList.get(1))/
-                    (slaViolationTimeList.get(1) - slaViolationTimeList.get(2)));
+            totalPower += getPowerConsumptionList().get(getPowerConsumptionList().size() - 1);
+            getPowerConsumptionList().add(totalPower);
         }
     }
 
     /**
-     * Get power consumption penalty
-     * @return Power consumption penalty
+     * Get SLA violation penalty or power consumption penalty
+     * @param list list with SLA violation time or power consumption
+     * @return penalty
      */
-    private double getPowerConsumptionPenalty() {
-        List<Double> powerList = getPowerConsumptionList();
-        Collections.reverse(powerList);
-        if (powerList.size() < 3) {
+    private double getPartPenalty(List<Double> list) {
+        int size = list.size();
+        if (size < 3) {
             // TODO: 26.02.2018 what to return
             return Double.MAX_VALUE;
         } else {
-            return ((powerList.get(0) - powerList.get(1))/(powerList.get(1) - powerList.get(2)));
+            return ((list.get(size - 1) - list.get(size - 2))/(list.get(size - 2) - list.get(size - 3)));
         }
     }
 
@@ -201,7 +245,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * @return total penalty
      */
     private double getPenalty() {
-        return (cofImportanceSla * getSlaViolationPenalty() + cofImportancePower * getPowerConsumptionPenalty());
+        return (cofImportanceSla * getPartPenalty(getSlaViolationTimeList()) + cofImportancePower * getPartPenalty(getPowerConsumptionList()));
     }
 
     /**
@@ -215,9 +259,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     private boolean isSwitchedOffHost(PowerHost host) {
-        if (host.getUtilizationOfCpu() == 0) {
-            return true;
-        } else return false;
+        return host.getUtilizationOfCpu() == 0;
     }
 
     public void setLearningRate(double learningRate) {
@@ -252,18 +294,17 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         }
     }
 
-    @Override
-    protected boolean isHostOverUtilized(PowerHost powerHost) {
-        return false;
-    }
-
     public List<Integer> getStatesList() {
         return statesList;
     }
 
     private void setActionsList() {
+        int size = this.<PowerHost>getHostList().size();
+        for (int i = 0; i < size; i++) {
+            getActionsList().add(true);
+        }
         for (PowerHost host: this.<PowerHost>getHostList()) {
-            getActionsList().add(host.getId(), isSwitchedOffHost(host));
+            getActionsList().set(host.getId(), isSwitchedOffHost(host));
         }
     }
 

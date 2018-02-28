@@ -30,7 +30,9 @@ public class Runner {
             System.exit(0);
         }
         init(inputFolder + "/" + workload);
-        start(experimentName, outputFolder, getVmAllocationPolicyLrMmt(parameter));
+        //start(experimentName, outputFolder, getVmAllocationPolicyLrMmt(parameter));
+
+        start(experimentName, outputFolder, getVmAllocationPolicyAgent(parameter));
     }
 
     protected void initLogOutput( boolean enableOutput, boolean outputToFile, String outputFolder, String experimentName) throws IOException {
@@ -80,40 +82,6 @@ public class Runner {
             Log.printLine("Received " + newList.size() + " cloudlets");
             CloudSim.stopSimulation();
             Environment.printResults(datacenter, vmList, lastClock, experimentName, Parameters.OUTPUT_CSV, outputFolder);
-
-            /*HostPowerModeSelectionPolicyAgent a = new HostPowerModeSelectionPolicyAgent(new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
-            int firstState = a.saveState(1234567890);
-            int secondState = a.saveState(1234567890);
-            int thirdState = a.saveState(a.observeState());
-
-            System.out.println(firstState);
-            System.out.println(secondState);
-            System.out.println(thirdState);
-
-            List<List<Double>> qTable = a.getQTable();
-
-            for (int i = 0; i < qTable.size(); i++) {
-                for (int j = 0; j < qTable.get(0).size(); j++) {
-                    if (qTable.get(i).get(j) == Double.MAX_VALUE) {
-                        System.out.print("--\t");
-                    } else {
-                        System.out.print(qTable.get(i).get(j) + "\t");
-                    }
-                }
-                System.out.print("\n");
-            }
-
-            List<Integer> listStates = a.getStatesList();
-            for (int i = 0; i < listStates.size(); i++) {
-                System.out.println(i + "\t" + listStates.get(i));
-            }
-
-            List<Boolean> listActions = a.getActionsList();
-            for (int i = 0; i < listActions.size(); i++) {
-                System.out.println(i + "\t" + listActions.get(i));
-            }
-            System.out.print(a.getPowerConsumptionList().toString());
-            System.out.print(a.getSlaViolationTimeList().toString());*/
         } catch (Exception e) {
             e.printStackTrace();
             Log.printLine("The simulation has been terminated due to an unexpected error");
@@ -131,6 +99,10 @@ public class Runner {
         PowerVmAllocationPolicyMigrationAbstract fallbackVmSelectionPolicy = new PowerVmAllocationPolicyMigrationStaticThreshold(
                 hostList, vmSelectionPolicy,0.7);
         return new PowerVmAllocationPolicyMigrationLocalRegression(hostList, vmSelectionPolicy, parameter, Parameters.SCHEDULING_INTERVAL, fallbackVmSelectionPolicy);
+    }
+
+    protected VmAllocationPolicy getVmAllocationPolicyAgent(String parameterName) {
+        return new HostPowerModeSelectionPolicyAgent(0.5, 0.5, 0.5, 0.5, new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
     }
 
     public void setEnableOutput(boolean enableOut) {

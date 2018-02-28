@@ -108,6 +108,9 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
         List<PowerHostUtilizationHistory> hibernateHosts = getSwitchedOffHosts();
 
         if(hostMode) {
+            System.out.println("Need to poweron host");
+            System.out.println("Host id " + hostToChangePowerMode.getId());
+
             saveAllocation();
 
             ExecutionTimeMeasurer.start("optimizeAllocationVmSelection");
@@ -124,10 +127,18 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
 
             restoreAllocation();
 
+            System.out.println("Finish to poweron host");
+
             getExecutionTimeHistoryTotal().add(ExecutionTimeMeasurer.end("optimizeAllocationTotal"));
+
+            System.out.println("Migration map: " + migrationMap.toString());
+            //System.exit(0);
 
             return migrationMap;
         } else {
+            System.out.println("Need to poweroff host");
+            System.out.println("Host id " + hostToChangePowerMode.getId());
+
             hibernateHosts.remove(hostToChangePowerMode);
             List<PowerHostUtilizationHistory> excludedHosts = hibernateHosts;
 
@@ -152,7 +163,12 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
 
             restoreAllocation();
 
+            System.out.println("Finish to poweroff host");
+
             getExecutionTimeHistoryTotal().add(ExecutionTimeMeasurer.end("optimizeAllocationTotal"));
+
+            System.out.println("Migration map: " + migrationMap.toString());
+            //System.exit(0);
 
             return migrationMap;
         }
@@ -499,7 +515,16 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
      * @param host the host
      * @return true, if the host is over utilized; false otherwise
      */
-    protected abstract boolean isHostOverUtilized(PowerHost host);
+    // TODO: 28.02.2018 need to add metric
+    protected boolean isHostOverUtilized(PowerHost host) {
+        addHistoryEntry(host, 0.09);
+        double totalRequestedMips = 0;
+        for (Vm vm : host.getVmList()) {
+            totalRequestedMips += vm.getCurrentRequestedTotalMips();
+        }
+        double utilization = totalRequestedMips / host.getTotalMips();
+        return utilization > 0.09;
+    }
 
     /**
      * Adds an entry for each history map of a host.
