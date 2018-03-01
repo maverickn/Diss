@@ -30,7 +30,7 @@ public class Parameters {
 	public final static int HOST_BW = 10000000; //  Kbit/s 10 Gbit/s (kilobyte = 1000 bytes)
 	public final static int HOST_STORAGE = 8000000; // MB, 1 TB (kilobyte = 1000 bytes)
 
-	public final static int NUMBER_OF_HOSTS = 15;
+	public final static int NUMBER_OF_HOSTS = 11;
 
 	public final static PowerModel[] HOST_POWER = {
 			new DellPowerEdgeR640(),

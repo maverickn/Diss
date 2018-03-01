@@ -3,6 +3,7 @@ package policy;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.HostDynamicWorkload;
 import org.cloudbus.cloudsim.HostStateHistoryEntry;
+import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVmSelectionPolicy;
 
@@ -18,7 +19,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
 
     private double cofImportancePower;
 
-    private final List<Integer> statesList = new ArrayList<>();
+    private final List<String> statesList = new ArrayList<>();
 
     private List<Boolean> actionsList = new ArrayList<>();
 
@@ -50,7 +51,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         Random rand = new Random();
         int probality = (rand.nextInt(10) + 1);
 
-        int state = observeState();
+        String state = observeState();
         System.out.println("state: " + state);
 
         int stateIndex = saveState(state);
@@ -119,7 +120,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
             System.out.println(i + "\t" + getActionsList().get(i));
         }
 
-        if (counter == 4) {
+        if (counter == 100) {
             System.exit(0);
         } else {
             counter ++;
@@ -128,15 +129,12 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         return idAndHostPowerMode;
     }
 
-    /**
-     * Observe state (get cpu utilization from hosts, convert utilization values to intervals)
-     * @return hashcode of hosts state
-     */
-    private int observeState() {
+
+    //old state observer
+    /*private int observeState() {
         StringBuilder convertedCpuUtilizationList = new StringBuilder();
         double cpuUtil;
         for (PowerHost host : this.<PowerHost> getHostList()) {
-            // TODO: 28.02.2018 get sum of each resource utilization by each host (CPU, RAM, Bw, Storage) and convert to intervals
             cpuUtil = host.getUtilizationOfCpu();
             if (cpuUtil >= 0 || cpuUtil < 0.3) {
                 convertedCpuUtilizationList.append("1");
@@ -149,6 +147,73 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         getSlaViolationTime();
         getTotalPower();
         return convertedCpuUtilizationList.hashCode();
+    }*/
+
+    /**
+     * Observe state (get sum cpu, sum ram, sum bw utilizations of each host, convert utilization values to intervals)
+     * @return hashcode of hosts state
+     */
+    private String observeState() {
+        String state;
+        double cpuUtilPercent = 0;
+        double ramUtilPercent = 0;
+        double bwUtilPercent = 0;
+
+        double ramUtilAbsolute = 0;
+        double bwUtilAbsolute = 0;
+
+        double cpuUtilTotalPercent = 0;
+        double ramTotalAbsolute = 0;
+        double bwTotalAbsolute = 0;
+
+        int maxCpuUtil = this.<PowerHost> getHostList().size();
+        for (PowerHost host : this.<PowerHost> getHostList()) {
+            cpuUtilTotalPercent += host.getUtilizationOfCpu();
+            ramUtilAbsolute += host.getUtilizationOfRam();
+            bwUtilAbsolute += host.getUtilizationOfBw();
+
+            ramTotalAbsolute += host.getRam();
+            bwTotalAbsolute += host.getBw();
+        }
+        cpuUtilPercent = cpuUtilTotalPercent / maxCpuUtil;
+        ramUtilPercent = ramUtilAbsolute / ramTotalAbsolute;
+        bwUtilPercent = bwUtilAbsolute / bwTotalAbsolute;
+
+        System.out.println("cpuUtilPercent: " + cpuUtilPercent);
+        System.out.println("ramUtilPercent: " + ramUtilPercent);
+        System.out.println("bwUtilPercent: " + bwUtilPercent);
+        System.out.println();
+
+        state = "" + convertToInterval(cpuUtilPercent) + convertToInterval(ramUtilPercent) + convertToInterval(bwUtilPercent);
+        getSlaViolationTime();
+        getTotalPower();
+        return state;
+    }
+
+    private int convertToInterval(double value) {
+        int intervalNumber = 0;
+        if (value >= 0 && value < 0.1) {
+            intervalNumber = 0;
+        } else if (value >= 0.1 && value < 0.2) {
+            intervalNumber = 1;
+        } else if (value >= 0.2 && value < 0.3) {
+            intervalNumber = 2;
+        } else if (value >= 0.3 && value < 0.4) {
+            intervalNumber = 3;
+        } else if (value >= 0.4 && value < 0.5) {
+            intervalNumber = 4;
+        } else if (value >= 0.5 && value < 0.6) {
+            intervalNumber = 5;
+        } else if (value >= 0.6 && value < 0.7) {
+            intervalNumber = 6;
+        } else if (value >= 0.7 && value < 0.8) {
+            intervalNumber = 7;
+        } else if (value >= 0.8 && value < 0.9) {
+            intervalNumber = 8;
+        } else if (value >= 0.9 && value <= 1) {
+            intervalNumber = 9;
+        }
+        return intervalNumber;
     }
 
     /**
@@ -156,7 +221,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * @param state state
      * @return index of state in statesList
      */
-    private int saveState(int state) {
+    private int saveState(String state) {
         if (getStatesList().isEmpty()) {
             setActionsList();
             getStatesList().add(state);
@@ -202,27 +267,16 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
                 previousIsActive = entry.isActive();
             }
         }
-        if (getSlaViolationTimeList().isEmpty()) {
-            getSlaViolationTimeList().add(0.0);
-        } else {
             getSlaViolationTimeList().add(slaViolationTimePerHost);
-        }
     }
 
     /**
-     * Get total power per each host
+     * Get datacenter power
      */
     private void getTotalPower() {
-        double totalPower = 0;
-        for (PowerHost host : this.<PowerHost> getHostList()) {
-            totalPower += host.getPower();
-        }
-        if (getPowerConsumptionList().isEmpty()) {
-            getPowerConsumptionList().add(0.0);
-        } else {
-            totalPower += getPowerConsumptionList().get(getPowerConsumptionList().size() - 1);
-            getPowerConsumptionList().add(totalPower);
-        }
+        Host host = getHostList().get(0);
+        PowerDatacenter datacenter = (PowerDatacenter) host.getDatacenter();
+        getPowerConsumptionList().add(datacenter.getPower() / (3600 * 1000));
     }
 
     /**
@@ -233,8 +287,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     private double getPartPenalty(List<Double> list) {
         int size = list.size();
         if (size < 3) {
-            // TODO: 26.02.2018 what to return
-            return Double.MAX_VALUE;
+            return 1;
         } else {
             return ((list.get(size - 1) - list.get(size - 2))/(list.get(size - 2) - list.get(size - 3)));
         }
@@ -259,7 +312,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     private boolean isSwitchedOffHost(PowerHost host) {
-        return host.getUtilizationOfCpu() == 0;
+        return host.getUtilizationOfCpu() > 0;
     }
 
     public void setLearningRate(double learningRate) {
@@ -294,10 +347,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         }
     }
 
-    public List<Integer> getStatesList() {
+    public List<String> getStatesList() {
         return statesList;
     }
 
+    // TODO: 01.03.2018 need to store action for each host like -1 and 1
     private void setActionsList() {
         int size = this.<PowerHost>getHostList().size();
         for (int i = 0; i < size; i++) {

@@ -13,6 +13,7 @@ public class UtilizationModelInMemory implements UtilizationModel {
     //5 minutes * 288 = 24 hours
     private final double[] data;
 
+    // TODO: 01.03.2018 add ram and bw utilization models
     public UtilizationModelInMemory(String inputPath, double schedulingInterval)
             throws NumberFormatException,
             IOException {

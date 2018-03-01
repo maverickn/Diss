@@ -119,9 +119,9 @@ public class Environment {
 						Parameters.CLOUDLET_PES,
 						fileSize,
 						outputSize,
-						new UtilizationModelInMemory(
-								files[i].getAbsolutePath(),
-								Parameters.SCHEDULING_INTERVAL), utilizationModelNull, utilizationModelNull);
+						new UtilizationModelInMemory(files[i].getAbsolutePath(), Parameters.SCHEDULING_INTERVAL),
+						new UtilizationModelInMemory(files[i].getAbsolutePath(), Parameters.SCHEDULING_INTERVAL),
+						new UtilizationModelInMemory(files[i].getAbsolutePath(), Parameters.SCHEDULING_INTERVAL));
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(0);

@@ -107,8 +107,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
 
         List<PowerHostUtilizationHistory> hibernateHosts = getSwitchedOffHosts();
 
-        if(hostMode) {
-            System.out.println("Need to poweron host");
+        if(!hostMode) {
+            System.out.println("Need to poweroff host");
             System.out.println("Host id " + hostToChangePowerMode.getId());
 
             saveAllocation();
@@ -127,7 +127,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
 
             restoreAllocation();
 
-            System.out.println("Finish to poweron host");
+            System.out.println("Finish to poweroff host");
 
             getExecutionTimeHistoryTotal().add(ExecutionTimeMeasurer.end("optimizeAllocationTotal"));
 
@@ -136,7 +136,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
 
             return migrationMap;
         } else {
-            System.out.println("Need to poweroff host");
+            System.out.println("Need to poweron host");
             System.out.println("Host id " + hostToChangePowerMode.getId());
 
             hibernateHosts.remove(hostToChangePowerMode);
@@ -163,7 +163,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
 
             restoreAllocation();
 
-            System.out.println("Finish to poweroff host");
+            System.out.println("Finish to poweron host");
 
             getExecutionTimeHistoryTotal().add(ExecutionTimeMeasurer.end("optimizeAllocationTotal"));
 
@@ -417,7 +417,8 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
     }
 
     protected List<? extends Vm> getAllVmsToMigrateFromHost(PowerHostUtilizationHistory host) {
-        List<Vm> vmsToMigrate = host.getVmList();
+        List<Vm> vmsToMigrate = new LinkedList<>();
+        vmsToMigrate.addAll(host.getVmList());
         host.vmDestroyAll();
         return vmsToMigrate;
     }
