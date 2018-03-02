@@ -3,8 +3,13 @@ import java.io.File;
 import java.text.DecimalFormat;
 import java.util.*;
 
+import models.power.DellPowerEdgeR640;
+import models.power.DellPowerEdgeR740;
+import models.power.DellPowerEdgeR830;
+import models.power.DellPowerEdgeR940;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.power.*;
+import org.cloudbus.cloudsim.power.models.PowerModel;
 import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
@@ -14,23 +19,28 @@ import policy.VmAllocationPolicyMigrationAbstract;
 
 public class Environment {
 
+    public final static PowerModel[] HOST_POWER = {
+            new DellPowerEdgeR640(),
+            new DellPowerEdgeR740(),
+            new DellPowerEdgeR830(),
+            new DellPowerEdgeR940() };
+
+    public final static int CLOUDLET_LENGTH	= 2500 * (int) ParseConfig.simulationLimit;
+    public final static int CLOUDLET_PES = 1;
+
 	public static List<Vm> createVmList(int brokerId, int vmsCount) {
 		List<Vm> vms = new ArrayList<>();
 		for (int i = 0; i < vmsCount; i++) {
-			int vmType = i / (int) Math.ceil((double) vmsCount / Parameters.VM_TYPES);
+			int vmType = i / (int) Math.ceil((double) vmsCount / ParseConfig.vmTypes);
 			vms.add(
 					new PowerVm(
 					i,
-					brokerId,
-					Parameters.VM_MIPS[vmType],
-					Parameters.VM_PES[vmType],
-					Parameters.VM_RAM[vmType],
-					Parameters.VM_BW,
-					Parameters.VM_SIZE,
+					brokerId, ParseConfig.vmMips[vmType], ParseConfig.vmPes[vmType],
+							ParseConfig.vmRam[vmType], ParseConfig.vmBw, ParseConfig.vmSize,
 					1,
 					"Xen",
-					new CloudletSchedulerDynamicWorkload(Parameters.VM_MIPS[vmType], Parameters.VM_PES[vmType]),
-					Parameters.SCHEDULING_INTERVAL)
+					new CloudletSchedulerDynamicWorkload(ParseConfig.vmMips[vmType], ParseConfig.vmPes[vmType]),
+                            ParseConfig.schedulingInterval)
 			);
 		}
 		return vms;
@@ -39,20 +49,17 @@ public class Environment {
 	public static List<PowerHost> createHostList(int hostsCount) {
 		List<PowerHost> hostList = new ArrayList<>();
 		for (int i = 0; i < hostsCount; i++) {
-			int hostType = i % Parameters.HOST_TYPES;
+			int hostType = i % ParseConfig.hostTypes;
 			List<Pe> peList = new ArrayList<>();
-			for (int j = 0; j < Parameters.HOST_PES[hostType]; j++) {
-				peList.add(new Pe(j, new PeProvisionerSimple(Parameters.HOST_MIPS[hostType])));
+			for (int j = 0; j < ParseConfig.hostPes[hostType]; j++) {
+				peList.add(new Pe(j, new PeProvisionerSimple(ParseConfig.hostMpis[hostType])));
 			}
 			hostList.add(
 					new PowerHostUtilizationHistory(
 					i,
-					new RamProvisionerSimple(Parameters.HOST_RAM[hostType]),
-					new BwProvisionerSimple(Parameters.HOST_BW),
-					Parameters.HOST_STORAGE,
-					peList,
-					new VmSchedulerTimeSharedOverSubscription(peList),
-					Parameters.HOST_POWER[hostType])
+					new RamProvisionerSimple(ParseConfig.hostRam[hostType]),
+					new BwProvisionerSimple(ParseConfig.hostBw), ParseConfig.hostStorage, peList,
+					new VmSchedulerTimeSharedOverSubscription(peList), HOST_POWER[hostType])
 			);
 		}
 		return hostList;
@@ -96,7 +103,7 @@ public class Environment {
 						characteristics,
 						vmAllocationPolicy,
 						new LinkedList<Storage>(),
-						Parameters.SCHEDULING_INTERVAL);
+                    ParseConfig.schedulingInterval);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(0);
@@ -116,13 +123,13 @@ public class Environment {
 			try {
 				cloudlet = new Cloudlet(
 						i,
-						Parameters.CLOUDLET_LENGTH,
-						Parameters.CLOUDLET_PES,
+                        CLOUDLET_LENGTH,
+                        CLOUDLET_PES,
 						fileSize,
 						outputSize,
-						new UtilizationModelInMemory(files[i].getAbsolutePath(), Parameters.SCHEDULING_INTERVAL),
-						new UtilizationModelInMemory(files[i].getAbsolutePath(), Parameters.SCHEDULING_INTERVAL),
-						new UtilizationModelInMemory(files[i].getAbsolutePath(), Parameters.SCHEDULING_INTERVAL));
+						new UtilizationModelInMemory(files[i].getAbsolutePath(), ParseConfig.schedulingInterval),
+						new UtilizationModelInMemory(files[i].getAbsolutePath(), ParseConfig.schedulingInterval),
+						new UtilizationModelInMemory(files[i].getAbsolutePath(), ParseConfig.schedulingInterval));
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(0);

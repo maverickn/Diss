@@ -3,7 +3,8 @@ import java.util.Objects;
 public class QLearingAgent {
 
     public static void main(String[] args) {
-        String inputFolder = Objects.requireNonNull(QLearingAgent.class.getClassLoader().getResource("planetlab")).getPath();
-        new Runner(Parameters.ENABLE_OUTPUT, false, "output", "trace_1",  inputFolder);
+        ParseConfig.getData();
+        String path = Objects.requireNonNull(QLearingAgent.class.getClassLoader().getResource(ParseConfig.inputFolder)).getPath();
+        new Runner(ParseConfig.enableOutput, ParseConfig.outputLog, ParseConfig.outputFolder, ParseConfig.experimentName, path);
     }
 }

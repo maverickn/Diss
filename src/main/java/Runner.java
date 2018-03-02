@@ -19,9 +19,9 @@ public class Runner {
 
     protected static List<PowerHost> hostList;
 
-    public Runner(boolean enableOutput, boolean outputToLogFile, String outputFolder, String experimentName, String inputFolder) {
+    public Runner(boolean enableOutput, boolean outputLog, String outputFolder, String experimentName, String inputFolder) {
         try {
-            initLogOutput(enableOutput, outputToLogFile, outputFolder, experimentName);
+            initLogOutput(enableOutput, outputLog, outputFolder, experimentName);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(0);
@@ -55,7 +55,7 @@ public class Runner {
             int brokerId = broker.getId();
             cloudletList = Environment.createCloudletList(brokerId, experimentFolder);
             vmList = Environment.createVmList(brokerId, cloudletList.size());
-            hostList = Environment.createHostList(Parameters.NUMBER_OF_HOSTS);
+            hostList = Environment.createHostList(ParseConfig.hostsCount);
         } catch (Exception e) {
             e.printStackTrace();
             Log.printLine("The simulation has been terminated due to an unexpected error");
@@ -71,12 +71,12 @@ public class Runner {
             datacenter.setDisableMigrations(false);
             broker.submitVmList(vmList);
             broker.submitCloudletList(cloudletList);
-            CloudSim.terminateSimulation(Parameters.SIMULATION_LIMIT);
+            CloudSim.terminateSimulation(ParseConfig.simulationLimit);
             double lastClock = CloudSim.startSimulation();
             List<Cloudlet> newList = broker.getCloudletReceivedList();
             Log.printLine("Received " + newList.size() + " cloudlets");
             CloudSim.stopSimulation();
-            Environment.printResults(datacenter, vmList, lastClock, experimentName, Parameters.OUTPUT_CSV, outputFolder);
+            Environment.printResults(datacenter, vmList, lastClock, experimentName, ParseConfig.outputCsv, outputFolder);
         } catch (Exception e) {
             e.printStackTrace();
             Log.printLine("The simulation has been terminated due to an unexpected error");
