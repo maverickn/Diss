@@ -10,6 +10,7 @@ import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.cloudbus.cloudsim.util.MathUtil;
 import models.utilization.UtilizationModelInMemory;
+import policy.VmAllocationPolicyMigrationAbstract;
 
 public class Environment {
 
@@ -107,7 +108,7 @@ public class Environment {
 		List<Cloudlet> list = new ArrayList<>();
 		long fileSize = 300;
 		long outputSize = 300;
-		UtilizationModel utilizationModelNull = new UtilizationModelNull();
+		//UtilizationModel utilizationModelNull = new UtilizationModelNull();
 		java.io.File inputFolder = new java.io.File(inputFolderName);
 		File[] files = inputFolder.listFiles();
 		for (int i = 0; i < files.length; i++) {
@@ -169,8 +170,7 @@ public class Environment {
 		return timeBeforeVmMigration;
 	}
 
-	public static void printResults(PowerDatacenter datacenter, List<Vm> vms, double lastClock, String experimentName,
-                                    boolean outputInCsv, String outputFolder) {
+	public static void printResults(PowerDatacenter datacenter, List<Vm> vms, double lastClock, String experimentName, boolean outputInCsv, String outputFolder) {
 		Log.enable();
 		List<Host> hosts = datacenter.getHostList();
 
@@ -257,9 +257,9 @@ public class Environment {
 			data.append(String.format("%.2f", meanTimeBeforeVmMigration) + delimeter);
 			data.append(String.format("%.2f", stDevTimeBeforeVmMigration) + delimeter);
 
-			if (datacenter.getVmAllocationPolicy() instanceof PowerVmAllocationPolicyMigrationAbstract) {
-				PowerVmAllocationPolicyMigrationAbstract vmAllocationPolicy =
-						(PowerVmAllocationPolicyMigrationAbstract) datacenter.getVmAllocationPolicy();
+			if (datacenter.getVmAllocationPolicy() instanceof VmAllocationPolicyMigrationAbstract) {
+				VmAllocationPolicyMigrationAbstract vmAllocationPolicy =
+						(VmAllocationPolicyMigrationAbstract) datacenter.getVmAllocationPolicy();
 				double executionTimeVmSelectionMean = MathUtil.mean(vmAllocationPolicy
 						.getExecutionTimeHistoryVmSelection());
 				double executionTimeVmSelectionStDev = MathUtil.stDev(vmAllocationPolicy
@@ -288,8 +288,6 @@ public class Environment {
 
 				writeMetricHistory(hosts, vmAllocationPolicy, outputFolder + "/metrics/" + experimentName + "_metric");
 			}
-			data.append(";\t");
-
 			writeDataRow(data.toString(), outputFolder + "/stats/" + experimentName + "_stats.csv");
 			writeDataColumn(timeBeforeHostShutdown, outputFolder + "/time_before_host_shutdown/" + experimentName + "_time_before_host_shutdown.csv");
 			writeDataColumn(timeBeforeVmMigration, outputFolder + "/time_before_vm_migration/" + experimentName + "_time_before_vm_migration.csv");
@@ -316,8 +314,8 @@ public class Environment {
 			Log.printLine(String.format("Mean time before a VM migration: %.2f sec", meanTimeBeforeVmMigration));
 			Log.printLine(String.format("StDev time before a VM migration: %.2f sec", stDevTimeBeforeVmMigration));
 
-			if (datacenter.getVmAllocationPolicy() instanceof PowerVmAllocationPolicyMigrationAbstract) {
-				PowerVmAllocationPolicyMigrationAbstract vmAllocationPolicy = (PowerVmAllocationPolicyMigrationAbstract) datacenter.getVmAllocationPolicy();
+			if (datacenter.getVmAllocationPolicy() instanceof VmAllocationPolicyMigrationAbstract) {
+				VmAllocationPolicyMigrationAbstract vmAllocationPolicy = (VmAllocationPolicyMigrationAbstract) datacenter.getVmAllocationPolicy();
 				double executionTimeVmSelectionMean = MathUtil.mean(vmAllocationPolicy.getExecutionTimeHistoryVmSelection());
 				double executionTimeVmSelectionStDev = MathUtil.stDev(vmAllocationPolicy.getExecutionTimeHistoryVmSelection());
 
@@ -345,21 +343,6 @@ public class Environment {
 			Log.printLine();
 		}
 		Log.setDisabled(true);
-	}
-
-	public static String parseExperimentName(String name) {
-		Scanner scanner = new Scanner(name);
-		StringBuilder csvName = new StringBuilder();
-		scanner.useDelimiter("_");
-		for (int i = 0; i < 4; i++) {
-			if (scanner.hasNext()) {
-				csvName.append(scanner.next() + ",");
-			} else {
-				csvName.append(",");
-			}
-		}
-		scanner.close();
-		return csvName.toString();
 	}
 
 	protected static double getSlaTimePerActiveHost(List<Host> hosts) {
@@ -497,8 +480,7 @@ public class Environment {
 		}
 	}
 
-	public static void writeMetricHistory(List<? extends Host> hosts,
-										  PowerVmAllocationPolicyMigrationAbstract vmAllocationPolicy, String outputPath) {
+	public static void writeMetricHistory(List<? extends Host> hosts, VmAllocationPolicyMigrationAbstract vmAllocationPolicy, String outputPath) {
 		 //for (Host host : hosts) {
 		for (int j = 0; j < 10; j++) {
 			Host host = hosts.get(j);
@@ -550,8 +532,7 @@ public class Environment {
 		}
 	}
 
-	public static void printMetricHistory(List<? extends Host> hosts,
-										  PowerVmAllocationPolicyMigrationAbstract vmAllocationPolicy) {
+	public static void printMetricHistory(List<? extends Host> hosts, VmAllocationPolicyMigrationAbstract vmAllocationPolicy) {
 		for (int i = 0; i < 10; i++) {
 			Host host = hosts.get(i);
 			Log.printLine("Host #" + host.getId());

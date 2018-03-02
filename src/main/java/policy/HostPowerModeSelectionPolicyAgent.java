@@ -120,7 +120,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
             System.out.println(i + "\t" + getActionsList().get(i));
         }
 
-        if (counter == 100) {
+        if (counter == 10) {
             System.exit(0);
         } else {
             counter ++;

@@ -11,8 +11,6 @@ import java.util.List;
 
 public class Runner {
 
-    private static boolean enableOutput;
-
     protected static DatacenterBroker broker;
 
     protected static List<Cloudlet> cloudletList;
@@ -21,24 +19,21 @@ public class Runner {
 
     protected static List<PowerHost> hostList;
 
-    public Runner(boolean enableOutput, boolean outputToFile, String inputFolder, String outputFolder, String workload, String experiment, String parameter) {
-        String experimentName = workload + "_" + experiment + "_" + parameter;
+    public Runner(boolean enableOutput, boolean outputToLogFile, String outputFolder, String experimentName, String inputFolder) {
         try {
-            initLogOutput(enableOutput, outputToFile, outputFolder, experimentName);
+            initLogOutput(enableOutput, outputToLogFile, outputFolder, experimentName);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(0);
         }
-        init(inputFolder + "/" + workload);
-        //start(experimentName, outputFolder, getVmAllocationPolicyLrMmt(parameter));
-
-        start(experimentName, outputFolder, getVmAllocationPolicyAgent(parameter));
+        init(inputFolder + "/" + experimentName);
+        VmAllocationPolicy vap = new HostPowerModeSelectionPolicyAgent(0.5, 0.5, 0.5, 0.5, new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
+        start(experimentName, outputFolder, vap);
     }
 
-    protected void initLogOutput( boolean enableOutput, boolean outputToFile, String outputFolder, String experimentName) throws IOException {
-        setEnableOutput(enableOutput);
-        Log.setDisabled(!isEnableOutput());
-        if (isEnableOutput() && outputToFile) {
+    protected void initLogOutput(boolean enableOutput, boolean outputToLogFile, String outputFolder, String experimentName) throws IOException {
+        Log.setDisabled(!enableOutput);
+        if (enableOutput && outputToLogFile) {
             File folder = new File(outputFolder);
             if (!folder.exists()) {
                 folder.mkdir();
@@ -53,12 +48,12 @@ public class Runner {
         }
     }
 
-    protected void init(String inputFolder) {
+    protected void init(String experimentFolder) {
         try {
             CloudSim.init(1, Calendar.getInstance(), false);
             broker = Environment.createBroker();
             int brokerId = broker.getId();
-            cloudletList = Environment.createCloudletList(brokerId, inputFolder);
+            cloudletList = Environment.createCloudletList(brokerId, experimentFolder);
             vmList = Environment.createVmList(brokerId, cloudletList.size());
             hostList = Environment.createHostList(Parameters.NUMBER_OF_HOSTS);
         } catch (Exception e) {
@@ -88,29 +83,6 @@ public class Runner {
             System.exit(0);
         }
         Log.printLine("Finished " + experimentName);
-    }
-
-    protected VmAllocationPolicy getVmAllocationPolicyLrMmt(String parameterName) {
-        PowerVmSelectionPolicy vmSelectionPolicy = new PowerVmSelectionPolicyMinimumMigrationTime();
-        double parameter = 0;
-        if (!parameterName.isEmpty()) {
-            parameter = Double.valueOf(parameterName);
-        }
-        PowerVmAllocationPolicyMigrationAbstract fallbackVmSelectionPolicy = new PowerVmAllocationPolicyMigrationStaticThreshold(
-                hostList, vmSelectionPolicy,0.7);
-        return new PowerVmAllocationPolicyMigrationLocalRegression(hostList, vmSelectionPolicy, parameter, Parameters.SCHEDULING_INTERVAL, fallbackVmSelectionPolicy);
-    }
-
-    protected VmAllocationPolicy getVmAllocationPolicyAgent(String parameterName) {
-        return new HostPowerModeSelectionPolicyAgent(0.5, 0.5, 0.5, 0.5, new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
-    }
-
-    public void setEnableOutput(boolean enableOut) {
-        enableOutput = enableOut;
-    }
-
-    public boolean isEnableOutput() {
-        return enableOutput;
     }
 
 }
