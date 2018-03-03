@@ -14,7 +14,7 @@ import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.cloudbus.cloudsim.util.MathUtil;
-import models.utilization.UtilizationModelInMemory;
+import models.utilization.UtilizationModelPlanetLab;
 import policy.VmAllocationPolicyMigrationAbstract;
 
 public class Environment {
@@ -127,9 +127,9 @@ public class Environment {
                         CLOUDLET_PES,
 						fileSize,
 						outputSize,
-						new UtilizationModelInMemory(files[i].getAbsolutePath(), ParseConfig.schedulingInterval),
-						new UtilizationModelInMemory(files[i].getAbsolutePath(), ParseConfig.schedulingInterval),
-						new UtilizationModelInMemory(files[i].getAbsolutePath(), ParseConfig.schedulingInterval));
+						new UtilizationModelPlanetLab(files[i].getAbsolutePath(), ParseConfig.schedulingInterval),
+						new UtilizationModelPlanetLab(files[i].getAbsolutePath(), ParseConfig.schedulingInterval),
+						new UtilizationModelPlanetLab(files[i].getAbsolutePath(), ParseConfig.schedulingInterval));
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(0);

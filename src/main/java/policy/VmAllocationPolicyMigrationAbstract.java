@@ -94,22 +94,29 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
     public List<Map<String, Object>> optimizeAllocation(List<? extends Vm> vmList) {
         ExecutionTimeMeasurer.start("optimizeAllocationTotal");
 
-        Map<Integer, Boolean> idAndHostPowerMode = getHostPowerMode();
+        int[] actionIdAndHostPowerMode = getHostPowerMode();
+        if (actionIdAndHostPowerMode[0] % 2 == 0) {
+            actionIdAndHostPowerMode[0] = actionIdAndHostPowerMode[0] / 2;
+        } else {
+            actionIdAndHostPowerMode[0] = (actionIdAndHostPowerMode[0] - 1) / 2;
+        }
 
         PowerHostUtilizationHistory hostToChangePowerMode = null;
-        boolean hostMode = false;
         for (PowerHostUtilizationHistory host : this.<PowerHostUtilizationHistory> getHostList()) {
-            if (idAndHostPowerMode.containsKey(host.getId())) {
+            if (actionIdAndHostPowerMode[0] == host.getId()) {
                 hostToChangePowerMode = host;
-                hostMode = idAndHostPowerMode.get(host.getId());
             }
         }
 
         List<PowerHostUtilizationHistory> hibernateHosts = getSwitchedOffHosts();
 
-        if(!hostMode) {
+        if(actionIdAndHostPowerMode[1] == -1) {
             System.out.println("Need to poweroff host");
             System.out.println("Host id " + hostToChangePowerMode.getId());
+
+            if(isSwitchedOffHost(hostToChangePowerMode)) {
+                return null;
+            }
 
             saveAllocation();
 
@@ -138,6 +145,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
         } else {
             System.out.println("Need to poweron host");
             System.out.println("Host id " + hostToChangePowerMode.getId());
+
+            if(!isSwitchedOffHost(hostToChangePowerMode)) {
+                return null;
+            }
 
             hibernateHosts.remove(hostToChangePowerMode);
             List<PowerHostUtilizationHistory> excludedHosts = hibernateHosts;
@@ -238,7 +249,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
         return migrationMap;
     }*/
 
-    protected abstract Map<Integer, Boolean> getHostPowerMode();
+    protected abstract int[] getHostPowerMode();
 
     /**
      * Prints the over utilized hosts.
@@ -467,6 +478,10 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
             }
         }
         return switchedOffHosts;
+    }
+
+    private boolean isSwitchedOffHost(PowerHostUtilizationHistory host) {
+        return host.getUtilizationOfCpu() == 0.0;
     }
 
     /**

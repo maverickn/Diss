@@ -6,7 +6,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-public class UtilizationModelInMemory implements UtilizationModel {
+public class UtilizationModelPlanetLab implements UtilizationModel {
 
     private double schedulingInterval;
 
@@ -14,7 +14,7 @@ public class UtilizationModelInMemory implements UtilizationModel {
     private final double[] data;
 
     // TODO: 01.03.2018 add ram and bw utilization models
-    public UtilizationModelInMemory(String inputPath, double schedulingInterval)
+    public UtilizationModelPlanetLab(String inputPath, double schedulingInterval)
             throws NumberFormatException,
             IOException {
         data = new double[289];
@@ -28,7 +28,7 @@ public class UtilizationModelInMemory implements UtilizationModel {
         input.close();
     }
 
-    public UtilizationModelInMemory(String inputPath, double schedulingInterval, int dataSamples)
+    public UtilizationModelPlanetLab(String inputPath, double schedulingInterval, int dataSamples)
             throws NumberFormatException,
             IOException {
         setSchedulingInterval(schedulingInterval);
