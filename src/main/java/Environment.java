@@ -7,6 +7,7 @@ import models.power.DellPowerEdgeR640;
 import models.power.DellPowerEdgeR740;
 import models.power.DellPowerEdgeR830;
 import models.power.DellPowerEdgeR940;
+import models.utilization.UtilizationModelBitbrains;
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.power.*;
 import org.cloudbus.cloudsim.power.models.PowerModel;
@@ -52,7 +53,7 @@ public class Environment {
 			int hostType = i % ParseConfig.hostTypes;
 			List<Pe> peList = new ArrayList<>();
 			for (int j = 0; j < ParseConfig.hostPes[hostType]; j++) {
-				peList.add(new Pe(j, new PeProvisionerSimple(ParseConfig.hostMpis[hostType])));
+				peList.add(new Pe(j, new PeProvisionerSimple(ParseConfig.hostMips[hostType])));
 			}
 			hostList.add(
 					new PowerHostUtilizationHistory(
@@ -115,7 +116,6 @@ public class Environment {
 		List<Cloudlet> list = new ArrayList<>();
 		long fileSize = 300;
 		long outputSize = 300;
-		//UtilizationModel utilizationModelNull = new UtilizationModelNull();
 		java.io.File inputFolder = new java.io.File(inputFolderName);
 		File[] files = inputFolder.listFiles();
 		for (int i = 0; i < files.length; i++) {
@@ -127,9 +127,12 @@ public class Environment {
                         CLOUDLET_PES,
 						fileSize,
 						outputSize,
-						new UtilizationModelPlanetLab(files[i].getAbsolutePath(), ParseConfig.schedulingInterval),
-						new UtilizationModelPlanetLab(files[i].getAbsolutePath(), ParseConfig.schedulingInterval),
-						new UtilizationModelPlanetLab(files[i].getAbsolutePath(), ParseConfig.schedulingInterval));
+						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
+								ParseConfig.simulationLimit / ParseConfig.schedulingInterval),
+						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
+								ParseConfig.simulationLimit / ParseConfig.schedulingInterval, ParseConfig.vmRam),
+						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
+								ParseConfig.simulationLimit / ParseConfig.schedulingInterval, ParseConfig.vmBw));
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(0);

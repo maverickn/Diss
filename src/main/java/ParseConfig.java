@@ -16,8 +16,8 @@ public class ParseConfig {
     public static String experimentName;
     public static boolean outputCsv;
 
-    public static double schedulingInterval;
-    public static double simulationLimit;
+    public static int schedulingInterval;
+    public static int simulationLimit;
 
     public static int vmTypes;
     public static int[] vmMips;
@@ -27,7 +27,7 @@ public class ParseConfig {
     public static int vmSize;
 
     public static int hostTypes;
-    public static int[] hostMpis;
+    public static int[] hostMips;
     public static int[] hostPes;
     public static int[] hostRam;
     public static int hostBw;
@@ -35,9 +35,9 @@ public class ParseConfig {
 
     public static int hostsCount;
 
-    public static void getData() {
+    public static void getData(String configName) {
         try {
-            Object obj = new JSONParser().parse(new FileReader("dc_config.json"));
+            Object obj = new JSONParser().parse(new FileReader(configName));
             JSONObject jo = (JSONObject) obj;
 
             enableOutput = (boolean) jo.get("enableOutput");
@@ -70,10 +70,10 @@ public class ParseConfig {
             vmSize = ((Long) jo.get("vmSize")).intValue();
 
             hostTypes = ((Long) jo.get("hostTypes")).intValue();
-            hostMpis = new int[hostTypes];
-            ja = (JSONArray) jo.get("hostMpis");
+            hostMips = new int[hostTypes];
+            ja = (JSONArray) jo.get("hostMips");
             for (int i = 0; i < ja.size(); ++i) {
-                hostMpis[i] = ((Long) ja.get(i)).intValue();
+                hostMips[i] = ((Long) ja.get(i)).intValue();
             }
             hostPes = new int[hostTypes];
             ja = (JSONArray) jo.get("hostPes");
