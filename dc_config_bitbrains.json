@@ -12,7 +12,7 @@
   "_simulationLimit_comment": "24 hours",
   "simulationLimit": 86000,
 
-  "vmTypes": 4,
+  "vmTypesCount": 4,
   "vmMips": [2500, 2000, 1000, 500],
   "vmPes": [1, 1, 1, 1],
   "_vmRam_comment": "MB",
@@ -22,7 +22,8 @@
   "_vmSize_comment": "MB 2.5 GB (kilobyte = 1000 bytes)",
   "vmSize": 2500,
 
-  "hostTypes": 4,
+  "hostTypesCount": 4,
+  "hostTypes": ["DellPowerEdgeR640", "DellPowerEdgeR740", "DellPowerEdgeR830", "DellPowerEdgeR940"],
   "hostMips": [2500, 2500, 2200, 2500],
   "hostPes": [56, 56, 88, 112],
   "_hostRam_comment": "MB",

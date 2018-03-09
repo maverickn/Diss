@@ -15,16 +15,9 @@ import org.cloudbus.cloudsim.provisioners.BwProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.PeProvisionerSimple;
 import org.cloudbus.cloudsim.provisioners.RamProvisionerSimple;
 import org.cloudbus.cloudsim.util.MathUtil;
-import models.utilization.UtilizationModelPlanetLab;
 import policy.VmAllocationPolicyMigrationAbstract;
 
 public class Environment {
-
-    public final static PowerModel[] HOST_POWER = {
-            new DellPowerEdgeR640(),
-            new DellPowerEdgeR740(),
-            new DellPowerEdgeR830(),
-            new DellPowerEdgeR940() };
 
     public final static int CLOUDLET_LENGTH	= 2500 * (int) ParseConfig.simulationLimit;
     public final static int CLOUDLET_PES = 1;
@@ -32,7 +25,7 @@ public class Environment {
 	public static List<Vm> createVmList(int brokerId, int vmsCount) {
 		List<Vm> vms = new ArrayList<>();
 		for (int i = 0; i < vmsCount; i++) {
-			int vmType = i / (int) Math.ceil((double) vmsCount / ParseConfig.vmTypes);
+			int vmType = i / (int) Math.ceil((double) vmsCount / ParseConfig.vmTypesCount);
 			vms.add(
 					new PowerVm(
 					i,
@@ -50,7 +43,7 @@ public class Environment {
 	public static List<PowerHost> createHostList(int hostsCount) {
 		List<PowerHost> hostList = new ArrayList<>();
 		for (int i = 0; i < hostsCount; i++) {
-			int hostType = i % ParseConfig.hostTypes;
+			int hostType = i % ParseConfig.hostTypesCount;
 			List<Pe> peList = new ArrayList<>();
 			for (int j = 0; j < ParseConfig.hostPes[hostType]; j++) {
 				peList.add(new Pe(j, new PeProvisionerSimple(ParseConfig.hostMips[hostType])));
@@ -60,7 +53,7 @@ public class Environment {
 					i,
 					new RamProvisionerSimple(ParseConfig.hostRam[hostType]),
 					new BwProvisionerSimple(ParseConfig.hostBw), ParseConfig.hostStorage, peList,
-					new VmSchedulerTimeSharedOverSubscription(peList), HOST_POWER[hostType])
+					new VmSchedulerTimeSharedOverSubscription(peList), ParseConfig.hostTypes[hostType])
 			);
 		}
 		return hostList;
