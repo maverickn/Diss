@@ -11,15 +11,17 @@ import java.io.IOException;
 
 public class ParseConfig {
 
-    public static boolean enableOutput;
-    public static boolean outputLog;
     public static String outputFolder;
     public static String inputFolder;
     public static String experimentName;
-    public static boolean outputCsv;
 
     public static int schedulingInterval;
     public static int simulationLimit;
+
+    public static double learningRate;
+    public static double discountFactor;
+    public static double cofImportanceSla;
+    public static double cofImportancePower;
 
     public static int vmTypesCount;
     public static int[] vmMips;
@@ -35,7 +37,6 @@ public class ParseConfig {
     public static int[] hostRam;
     public static int hostBw;
     public static int hostStorage;
-
     public static int hostsCount;
 
     public static void getData(String configName) {
@@ -43,15 +44,17 @@ public class ParseConfig {
             Object obj = new JSONParser().parse(new FileReader(configName));
             JSONObject jo = (JSONObject) obj;
 
-            enableOutput = (boolean) jo.get("enableOutput");
-            outputLog = (boolean) jo.get("outputLog");
             outputFolder = (String) jo.get("outputFolder");
             inputFolder = (String) jo.get("inputFolder");
             experimentName = (String) jo.get("experimentName");
-            outputCsv = (boolean) jo.get("outputCsv");
 
             schedulingInterval = ((Long) jo.get("schedulingInterval")).intValue();
             simulationLimit = ((Long) jo.get("simulationLimit")).intValue();
+
+            learningRate = (double) jo.get("learningRate");
+            discountFactor = (double) jo.get("discountFactor");
+            cofImportanceSla = (double) jo.get("cofImportanceSla");
+            cofImportancePower = (double) jo.get("cofImportancePower");
 
             vmTypesCount = ((Long) jo.get("vmTypesCount")).intValue();
             vmMips = new int[vmTypesCount];

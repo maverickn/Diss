@@ -1,16 +1,18 @@
 {
   "__comment": "matisse.net/bitcalc/",
-  "enableOutput": true,
-  "outputLog": false,
   "outputFolder": "output",
   "inputFolder": "F:\\Diss\\Projects\\Diss\\workload\\bitbrains",
   "experimentName": "trace_rnd_8",
-  "outputCsv": false,
 
   "_schedulingInterval_comment": "12 seconds",
   "schedulingInterval": 10,
   "_simulationLimit_comment": "24 hours",
   "simulationLimit": 86000,
+
+  "learningRate": 0.5,
+  "discountFactor": 0.5,
+  "cofImportanceSla": 0.5,
+  "cofImportancePower": 0.5,
 
   "vmTypesCount": 4,
   "vmMips": [2500, 2000, 1000, 500],

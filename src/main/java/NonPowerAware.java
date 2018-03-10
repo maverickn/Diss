@@ -7,6 +7,7 @@ import org.cloudbus.cloudsim.power.PowerDatacenterNonPowerAware;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicySimple;
 
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 
@@ -14,21 +15,25 @@ public class NonPowerAware {
 
     public static void main(String[] args) {
         ParseConfig.getData("dc_config_bitbrains.json");
-
-        Log.setDisabled(!ParseConfig.enableOutput);
+        try {
+            Runner.initLogOutput(ParseConfig.outputFolder, ParseConfig.experimentName);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
         Log.printLine("Starting " + ParseConfig.experimentName);
 
         try {
             CloudSim.init(1, Calendar.getInstance(), false);
 
-            DatacenterBroker broker = Environment.createBroker();
+            DatacenterBroker broker = SetupEntities.createBroker();
             int brokerId = broker.getId();
 
-            List<Cloudlet> cloudletList = Environment.createCloudletList(brokerId, ParseConfig.inputFolder + "/" + ParseConfig.experimentName);
-            List<Vm> vmList = Environment.createVmList(brokerId, cloudletList.size());
-            List<PowerHost> hostList = Environment.createHostList(ParseConfig.hostsCount);
+            List<Cloudlet> cloudletList = SetupEntities.createCloudletList(brokerId, ParseConfig.inputFolder + "/" + ParseConfig.experimentName);
+            List<Vm> vmList = SetupEntities.createVmList(brokerId, cloudletList.size());
+            List<PowerHost> hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
 
-            PowerDatacenterNonPowerAware datacenter = (PowerDatacenterNonPowerAware) Environment.createDatacenter(
+            PowerDatacenterNonPowerAware datacenter = (PowerDatacenterNonPowerAware) SetupEntities.createDatacenter(
                     "Datacenter",
                     PowerDatacenterNonPowerAware.class,
                     hostList,
@@ -47,7 +52,7 @@ public class NonPowerAware {
 
             CloudSim.stopSimulation();
 
-            Environment.printResults(datacenter, vmList, lastClock, ParseConfig.experimentName, ParseConfig.outputCsv, ParseConfig.outputFolder);
+            //SetupEntities.printResults(datacenter, vmList, lastClock, ParseConfig.experimentName, ParseConfig.outputFolder);
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -3,9 +3,8 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.power.*;
 import policy.HostPowerModeSelectionPolicyAgent;
 
+import java.io.*;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 
@@ -19,43 +18,75 @@ public class Runner {
 
     protected static List<PowerHost> hostList;
 
-    public Runner(boolean enableOutput, boolean outputLog, String outputFolder, String experimentName, String inputFolder) {
+    public Runner(String inputFolder, String outputFolder, String experimentName) {
         try {
-            initLogOutput(enableOutput, outputLog, outputFolder, experimentName);
+            initLogOutput(outputFolder, experimentName);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(0);
         }
         init(inputFolder + "/" + experimentName);
-        VmAllocationPolicy vap = new HostPowerModeSelectionPolicyAgent(0.5, 0.5, 0.5, 0.5, new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
+        VmAllocationPolicy vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower,
+                new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
         start(experimentName, outputFolder, vap);
     }
 
-    protected void initLogOutput(boolean enableOutput, boolean outputToLogFile, String outputFolder, String experimentName) throws IOException {
-        Log.setDisabled(!enableOutput);
-        if (enableOutput && outputToLogFile) {
-            File folder = new File(outputFolder);
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
-            File folder2 = new File(outputFolder + "/log");
-            if (!folder2.exists()) {
-                folder2.mkdir();
-            }
-            File file = new File(outputFolder + "/log/" + experimentName + ".txt");
+    public static void initLogOutput(String outputFolder, String experimentName) throws IOException {
+        Log.enable();
+        System.out.println("Output to log file. Please, wait...");
+        File folder = new File(outputFolder);
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+        File folder2 = new File(outputFolder + "/log");
+        if (!folder2.exists()) {
+            folder2.mkdir();
+        }
+        File file = new File(outputFolder + "/log/" + experimentName + ".log");
+        file.createNewFile();
+        Log.setOutput(new FileOutputStream(file));
+    }
+
+    public static void printResults(String experimentName, String outputFolder) {
+        File folder = new File(outputFolder);
+        if (!folder.exists()) {
+            folder.mkdir();
+        }
+        File folder1 = new File(outputFolder + "/metrics");
+        if (!folder1.exists()) {
+            folder1.mkdir();
+        }
+
+        List<Double> slaViolationTimeList = HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList();
+        List<Double> powerConsumptionList = HostPowerModeSelectionPolicyAgent.getPowerConsumptionList();
+
+        File file = new File(outputFolder + "/metrics/" + experimentName + "_metric.csv");
+        try {
             file.createNewFile();
-            Log.setOutput(new FileOutputStream(file));
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            for (int i = 0; i < slaViolationTimeList.size(); i++) {
+                writer.write(String.format("%.6f;\t%.6f;\t\n", slaViolationTimeList.get(i), powerConsumptionList.get(i)));
+            }
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(0);
         }
     }
 
     protected void init(String experimentFolder) {
         try {
             CloudSim.init(1, Calendar.getInstance(), false);
-            broker = Environment.createBroker();
+            broker = SetupEntities.createBroker();
             int brokerId = broker.getId();
-            cloudletList = Environment.createCloudletList(brokerId, experimentFolder);
-            vmList = Environment.createVmList(brokerId, cloudletList.size());
-            hostList = Environment.createHostList(ParseConfig.hostsCount);
+            cloudletList = SetupEntities.createCloudletList(brokerId, experimentFolder);
+            vmList = SetupEntities.createVmList(brokerId, cloudletList.size());
+            hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
         } catch (Exception e) {
             e.printStackTrace();
             Log.printLine("The simulation has been terminated due to an unexpected error");
@@ -64,19 +95,20 @@ public class Runner {
     }
 
     protected void start(String experimentName, String outputFolder, VmAllocationPolicy vmAllocationPolicy) {
-        System.out.println("Starting " + experimentName);
+        Log.printLine("Starting " + experimentName);
         try {
-            PowerDatacenter datacenter = (PowerDatacenter) Environment.createDatacenter("Datacenter",
+            PowerDatacenter datacenter = (PowerDatacenter) SetupEntities.createDatacenter("Datacenter",
                     PowerDatacenter.class, hostList, vmAllocationPolicy);
             datacenter.setDisableMigrations(false);
             broker.submitVmList(vmList);
             broker.submitCloudletList(cloudletList);
             CloudSim.terminateSimulation(ParseConfig.simulationLimit);
-            double lastClock = CloudSim.startSimulation();
+            //double lastClock = CloudSim.startSimulation();
             List<Cloudlet> newList = broker.getCloudletReceivedList();
             Log.printLine("Received " + newList.size() + " cloudlets");
             CloudSim.stopSimulation();
-            Environment.printResults(datacenter, vmList, lastClock, experimentName, ParseConfig.outputCsv, outputFolder);
+            //SetupEntities.printResults(datacenter, vmList, lastClock, experimentName, outputFolder);
+            printResults(experimentName, outputFolder);
         } catch (Exception e) {
             e.printStackTrace();
             Log.printLine("The simulation has been terminated due to an unexpected error");

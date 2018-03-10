@@ -7,11 +7,10 @@ import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVmSelectionPolicy;
 
-import java.math.RoundingMode;
 import java.text.DecimalFormat;
 import java.util.*;
 
-public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrationAbstract {
+public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigration {
 
     private double learningRate;
 
@@ -27,9 +26,9 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
 
     private List<List<Double>> qTable = new ArrayList<>();
 
-    private final List<Double> slaViolationTimeList = new ArrayList<>();
+    private static final List<Double> slaViolationTimeList = new ArrayList<>();
 
-    private final List<Double> powerConsumptionList = new ArrayList<>();
+    private static final List<Double> powerConsumptionList = new ArrayList<>();
 
     private Double oldQValue = 0.0;
 
@@ -46,7 +45,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
 
     /**
      * Get host id and power mode
-     * @return
+     * @return action index and host power mode
      */
     public int[] getHostPowerMode() {
         Random rand = new Random();
@@ -320,11 +319,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         return qTable;
     }
 
-    public List<Double> getSlaViolationTimeList() {
+    public static List<Double> getSlaViolationTimeList() {
         return slaViolationTimeList;
     }
 
-    public List<Double> getPowerConsumptionList() {
+    public static List<Double> getPowerConsumptionList() {
         return powerConsumptionList;
     }
 }

@@ -8,16 +8,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.cloudbus.cloudsim.Host;
-import org.cloudbus.cloudsim.HostDynamicWorkload;
-import org.cloudbus.cloudsim.Log;
-import org.cloudbus.cloudsim.Vm;
+import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.power.*;
 import org.cloudbus.cloudsim.power.lists.PowerVmList;
 import org.cloudbus.cloudsim.util.ExecutionTimeMeasurer;
 
-public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocationPolicyAbstract {
+public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolicyAbstract {
 
     /** The vm selection policy. */
     private PowerVmSelectionPolicy vmSelectionPolicy;
@@ -76,7 +73,7 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
      * @param hostList the host list
      * @param vmSelectionPolicy the vm selection policy
      */
-    public VmAllocationPolicyMigrationAbstract(
+    public VmAllocationPolicyMigration(
             List<? extends Host> hostList,
             PowerVmSelectionPolicy vmSelectionPolicy) {
         super(hostList);
@@ -531,15 +528,15 @@ public abstract class VmAllocationPolicyMigrationAbstract extends PowerVmAllocat
      * @param host the host
      * @return true, if the host is over utilized; false otherwise
      */
-    // TODO: 28.02.2018 need to add metric
+    // TODO: 28.02.2018 need to add policy
     protected boolean isHostOverUtilized(PowerHost host) {
-        addHistoryEntry(host, 0.09);
+        addHistoryEntry(host, 0.9);
         double totalRequestedMips = 0;
         for (Vm vm : host.getVmList()) {
             totalRequestedMips += vm.getCurrentRequestedTotalMips();
         }
         double utilization = totalRequestedMips / host.getTotalMips();
-        return utilization > 0.09;
+        return utilization > 0.9;
     }
 
     /**
