@@ -12,28 +12,68 @@ import java.util.*;
 
 public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigration {
 
+    /**
+     * The learning rate
+     */
     private double learningRate;
 
+    /**
+     * The discount factor
+     */
     private double discountFactor;
 
+    /**
+     * The coefficient of SLA importance
+     */
     private double cofImportanceSla;
 
+    /**
+     * The coefficient of power consumption importance
+     */
     private double cofImportancePower;
 
+    /**
+     * A list of states
+     */
     private final List<String> statesList = new ArrayList<>();
 
-    private List<Integer> actionsList = new ArrayList<>();
+    /**
+     * A list of actions
+     */
+    private final List<Integer> actionsList = new ArrayList<>();
 
+    /**
+     * A table with Q-values
+     */
     private List<List<Double>> qTable = new ArrayList<>();
 
+    /**
+     * The sla violation time list
+     */
     private static final List<Double> slaViolationTimeList = new ArrayList<>();
 
+    /**
+     * The power consumption list
+     */
     private static final List<Double> powerConsumptionList = new ArrayList<>();
 
-    private Double oldQValue = 0.0;
+    /**
+     * The previous Q-value
+     */
+    private Double previousQValue = 0.0;
 
     private int cnter = 0;
 
+    /**
+     * Instantiates a new HostPowerModeSelectionPolicyAgent.
+     *
+     * @param learningRate the learning rate
+     * @param discountFactor the discount Factor
+     * @param cofImportanceSla the coefficient of SLA importance importance
+     * @param cofImportancePower the coefficient of power consumption importance
+     * @param vmSelectionPolicy the vm selection policy
+     * @param hostList the host list
+     */
     public HostPowerModeSelectionPolicyAgent(double learningRate, double discountFactor, double cofImportanceSla, double cofImportancePower,
                                              PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
         super(hostList, vmSelectionPolicy);
@@ -44,7 +84,8 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Get host id and power mode
+     * Gets host id and power mode.
+     *
      * @return action index and host power mode
      */
     public int[] getHostPowerMode() {
@@ -116,7 +157,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
             System.out.print("\n");
         }
 
-        oldQValue = getQTable().get(stateIndex).get(actionIndex);
+        previousQValue = getQTable().get(stateIndex).get(actionIndex);
 
         int powerMode = getActionsList().get(actionIndex);
         System.out.println("powerMode: " + powerMode);
@@ -131,7 +172,8 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Observe state (get sum cpu, sum ram, sum bw utilizations of each host, convert utilization values to intervals)
+     * Observe state (get sum cpu, sum ram, sum bw utilizations of each host, convert utilization values to intervals).
+     *
      * @return hashcode of hosts state
      */
     private String observeState() {
@@ -173,7 +215,8 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Save state in statesList, add row to qTable with Double.MAX_VALUE
+     * Save state in statesList, add row to qTable with Double.MAX_VALUE.
+     *
      * @param state state
      * @return index of state in statesList
      */
@@ -204,7 +247,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Get total SLA violation time per each active host
+     * Gets total SLA violation time per each active host.
      */
     private void getSlaViolationTime() {
         double slaViolationTimePerHost = 0;
@@ -230,7 +273,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Get datacenter power
+     * Gets datacenter power.
      */
     private void getTotalPower() {
         Host host = getHostList().get(0);
@@ -239,7 +282,8 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Get SLA violation penalty or power consumption penalty
+     * Gets SLA violation penalty or power consumption penalty.
+     *
      * @param list list with SLA violation time or power consumption
      * @return penalty
      */
@@ -258,7 +302,8 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Get total penalty (SLA violation penalty + power consumption penalty)
+     * Gets total penalty (SLA violation penalty + power consumption penalty).
+     *
      * @return total penalty
      */
     private double getPenalty() {
@@ -266,15 +311,21 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Get new Q-value
+     * Gets new Q-value.
+     *
      * @param penalty total penalty
      * @param estimateOptimalFutureValue estimate of optimal future value
      * @return new Q-value
      */
     private double getNewQValue(double penalty, double estimateOptimalFutureValue) {
-        return ((1 - learningRate) * oldQValue + learningRate * (penalty + discountFactor * estimateOptimalFutureValue));
+        return ((1 - learningRate) * previousQValue + learningRate * (penalty + discountFactor * estimateOptimalFutureValue));
     }
 
+    /**
+     * Sets the learning rate.
+     *
+     * @param learningRate the learning rate
+     */
     public void setLearningRate(double learningRate) {
         if (learningRate < 0 || learningRate > 1) {
             throw new IllegalArgumentException("Learning rate must be between 0 and 1");
@@ -283,6 +334,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         }
     }
 
+    /**
+     * Sets the discount factor.
+     *
+     * @param discountFactor the discount factor
+     */
     public void setDiscountFactor(double discountFactor) {
         if (discountFactor < 0 || discountFactor > 1) {
             throw new IllegalArgumentException("Discount factor must be between 0 and 1");
@@ -291,6 +347,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         }
     }
 
+    /**
+     * Sets the coefficient of SLA importance.
+     *
+     * @param cofImportanceSla the coefficient of SLA importance
+     */
     public void setCofImportanceSla(double cofImportanceSla) {
         if (cofImportanceSla < 0 || cofImportanceSla > 1) {
             throw new IllegalArgumentException("Coefficient of SLA importance must be between 0 and 1");
@@ -299,30 +360,60 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         }
     }
 
+    /**
+     * Sets the coefficient of power consumption importance.
+     *
+     * @param cofImportancePower the coefficient of power consumption importance
+     */
     public void setCofImportancePower(double cofImportancePower) {
         if (cofImportancePower < 0 || cofImportancePower > 1) {
-            throw new IllegalArgumentException("Coefficient of power importance must be between 0 and 1");
+            throw new IllegalArgumentException("Coefficient of power consumption importance must be between 0 and 1");
         } else {
             this.cofImportancePower = cofImportancePower;
         }
     }
 
+    /**
+     * Gets a list of states.
+     *
+     * @return a list of states
+     */
     public List<String> getStatesList() {
         return statesList;
     }
 
+    /**
+     * Gets a list of actions.
+     *
+     * @return a list of actions
+     */
     public List<Integer> getActionsList() {
         return actionsList;
     }
 
+    /**
+     * Gets a table with Q-values.
+     *
+     * @return a table with Q-values
+     */
     public List<List<Double>> getQTable() {
         return qTable;
     }
 
+    /**
+     * Gets the sla violation time list
+     *
+     * @return the sla violation time list
+     */
     public static List<Double> getSlaViolationTimeList() {
         return slaViolationTimeList;
     }
 
+    /**
+     * Gets the power consumption list
+     *
+     * @return the power consumption list
+     */
     public static List<Double> getPowerConsumptionList() {
         return powerConsumptionList;
     }

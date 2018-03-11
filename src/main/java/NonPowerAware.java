@@ -45,7 +45,8 @@ public class NonPowerAware {
             broker.submitCloudletList(cloudletList);
 
             CloudSim.terminateSimulation(ParseConfig.simulationLimit);
-            double lastClock = CloudSim.startSimulation();
+            //double lastClock =
+            CloudSim.startSimulation();
 
             List<Cloudlet> newList = broker.getCloudletReceivedList();
             Log.printLine("Received " + newList.size() + " cloudlets");

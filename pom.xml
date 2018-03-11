@@ -35,7 +35,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>NonPowerAware</mainClass>
+                            <mainClass>QLearingAgent</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

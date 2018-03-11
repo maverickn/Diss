@@ -103,7 +103,8 @@ public class Runner {
             broker.submitVmList(vmList);
             broker.submitCloudletList(cloudletList);
             CloudSim.terminateSimulation(ParseConfig.simulationLimit);
-            //double lastClock = CloudSim.startSimulation();
+            //double lastClock =
+            CloudSim.startSimulation();
             List<Cloudlet> newList = broker.getCloudletReceivedList();
             Log.printLine("Received " + newList.size() + " cloudlets");
             CloudSim.stopSimulation();
@@ -115,6 +116,7 @@ public class Runner {
             System.exit(0);
         }
         Log.printLine("Finished " + experimentName);
+        System.out.println("Done!");
     }
 
 }
