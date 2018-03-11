@@ -47,7 +47,7 @@ public class Runner {
         Log.setOutput(new FileOutputStream(file));
     }
 
-    public static void printResults(String experimentName, String outputFolder) {
+    public static void printResults(String outputFolder, String experimentName) {
         File folder = new File(outputFolder);
         if (!folder.exists()) {
             folder.mkdir();
@@ -108,7 +108,7 @@ public class Runner {
             Log.printLine("Received " + newList.size() + " cloudlets");
             CloudSim.stopSimulation();
             //SetupEntities.printResults(datacenter, vmList, lastClock, experimentName, outputFolder);
-            printResults(experimentName, outputFolder);
+            printResults(outputFolder, experimentName);
         } catch (Exception e) {
             e.printStackTrace();
             Log.printLine("The simulation has been terminated due to an unexpected error");

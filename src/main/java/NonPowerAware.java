@@ -60,6 +60,7 @@ public class NonPowerAware {
             System.exit(0);
         }
         Log.printLine("Finished " + ParseConfig.experimentName);
+        System.out.println("Done!");
     }
 
 }
