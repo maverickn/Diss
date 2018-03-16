@@ -99,6 +99,9 @@ public class ParseConfig {
                     case "SuperMicroComputer6025BTR":
                         hostTypes[i] = new SuperMicroComputer6025BTR();
                         break;
+                    case "SuperMicroComputer6025BTRE5345":
+                        hostTypes[i] = new SuperMicroComputer6025BTRE5345();
+                        break;
                 }
 
             }

@@ -128,7 +128,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         if (minQValue == Double.MAX_VALUE) {
             int counter = 0;
             for (PowerHost host : this.<PowerHost> getHostList()) {
-                if (host.getUtilizationOfCpu() < 0.4) {
+                if (host.getVmList().size() != 0 && host.getUtilizationOfCpu() < 0.4) {
                     actionIndex = host.getId() * 2 + 1;
                     break;
                 }
@@ -207,7 +207,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         System.out.println("bwUtilPercent: " + bwUtilPercent);
         System.out.println();
 
-        DecimalFormat df = new DecimalFormat("#.#");
+        DecimalFormat df = new DecimalFormat("#.##");
         state = df.format(cpuUtilPercent) + df.format(ramUtilPercent) + df.format(bwUtilPercent);
         getSlaViolationTime();
         getTotalPower();
