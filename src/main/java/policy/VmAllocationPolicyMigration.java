@@ -13,6 +13,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.power.*;
 import org.cloudbus.cloudsim.power.lists.PowerVmList;
 import org.cloudbus.cloudsim.util.ExecutionTimeMeasurer;
+import org.cloudbus.cloudsim.util.MathUtil;
 
 public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolicyAbstract {
 
@@ -470,7 +471,7 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
      * @param host the host
      * @return true, if the host is over utilized; false otherwise
      */
-    protected boolean isHostOverUtilized(PowerHost host) {
+    protected boolean isHostOverUtilizedStaticThreshold(PowerHost host) {
         addHistoryEntry(host, 0.9);
         double totalRequestedMips = 0;
         for (Vm vm : host.getVmList()) {
@@ -478,6 +479,47 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
         }
         double utilization = totalRequestedMips / host.getTotalMips();
         return utilization > 0.9;
+    }
+
+    protected boolean isHostOverUtilized(PowerHost host) {
+        if (!getUtilizationHistory().containsKey(host.getId())) {
+            return isHostOverUtilizedStaticThreshold(host);
+        }
+        List<Double> utilizationHistoryList = new ArrayList<>();
+        utilizationHistoryList.addAll(getUtilizationHistory().get(host.getId()));
+        double[] utilizationHistory = MathUtil.listToArray(utilizationHistoryList);
+        int length = 10; // we use 10 to make the regression responsive enough to latest values
+        if (utilizationHistory.length < length) {
+            return isHostOverUtilizedStaticThreshold(host);
+        }
+        double[] utilizationHistoryReversed = new double[length];
+        for (int i = 0; i < length; i++) {
+            utilizationHistoryReversed[i] = utilizationHistory[length - i - 1];
+        }
+        double[] estimates = null;
+        try {
+            estimates = MathUtil.getLoessParameterEstimates(utilizationHistoryReversed);
+        } catch (IllegalArgumentException e) {
+            return isHostOverUtilizedStaticThreshold(host);
+        }
+        double migrationIntervals = Math.ceil(getMaximumVmMigrationTime(host) / 10);
+        double predictedUtilization = estimates[0] + estimates[1] * (length + migrationIntervals);
+        predictedUtilization *= 1.2;
+
+        addHistoryEntry(host, predictedUtilization);
+
+        return predictedUtilization >= 1;
+    }
+
+    protected double getMaximumVmMigrationTime(PowerHost host) {
+        int maxRam = Integer.MIN_VALUE;
+        for (Vm vm : host.getVmList()) {
+            int ram = vm.getRam();
+            if (ram > maxRam) {
+                maxRam = ram;
+            }
+        }
+        return maxRam / ((double) host.getBw() / (2 * 8000));
     }
 
     /**
