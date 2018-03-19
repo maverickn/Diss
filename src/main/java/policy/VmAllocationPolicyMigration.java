@@ -34,6 +34,12 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
     private final Map<Integer, List<Double>> utilizationHistory = new HashMap<>();
 
     /**
+     * A map of CPU utilization history (in percentage) for each host,
+     * where each key is a host id and each value is the CPU utilization percentage history.
+     */
+    private final Map<Integer, List<Double>> hostsUtilizationHistory = new HashMap<>();
+
+    /**
      * The metric history.
      */
     private final Map<Integer, List<Double>> metricHistory = new HashMap<>();
@@ -465,8 +471,7 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
     }*/
 
     /**
-     * Checks if host is over utilized.
-     * // TODO: need to add policy
+     * Checks if host is over utilized (static threshold).
      *
      * @param host the host
      * @return true, if the host is over utilized; false otherwise
@@ -481,12 +486,23 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
         return utilization > 0.9;
     }
 
+    /**
+     * Checks if host is over utilized.
+     *
+     * @param host the host
+     * @return true, if the host is over utilized; false otherwise
+     */
     protected boolean isHostOverUtilized(PowerHost host) {
-        if (!getUtilizationHistory().containsKey(host.getId())) {
-            return isHostOverUtilizedStaticThreshold(host);
+        for (PowerHost _host : this.<PowerHost> getHostList()) {
+            if (!getHostsUtilizationHistory().containsKey(_host.getId())) {
+                getHostsUtilizationHistory().put(_host.getId(), new LinkedList<>());
+            }
+            getHostsUtilizationHistory().get(_host.getId()).add(_host.getUtilizationOfCpu());
         }
+
         List<Double> utilizationHistoryList = new ArrayList<>();
-        utilizationHistoryList.addAll(getUtilizationHistory().get(host.getId()));
+        utilizationHistoryList.addAll(getHostsUtilizationHistory().get(host.getId()));
+
         double[] utilizationHistory = MathUtil.listToArray(utilizationHistoryList);
         int length = 10; // we use 10 to make the regression responsive enough to latest values
         if (utilizationHistory.length < length) {
@@ -511,6 +527,12 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
         return predictedUtilization >= 1;
     }
 
+    /**
+     * Gets the maximum vm migration time.
+     *
+     * @param host the host
+     * @return the maximum vm migration time
+     */
     protected double getMaximumVmMigrationTime(PowerHost host) {
         int maxRam = Integer.MIN_VALUE;
         for (Vm vm : host.getVmList()) {
@@ -727,5 +749,13 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
         return executionTimeHistoryTotal;
     }
 
+    /**
+     * Gets the utilization history for each host
+     *
+     * @return utilization history for each host
+     */
+    public Map<Integer, List<Double>> getHostsUtilizationHistory() {
+        return hostsUtilizationHistory;
+    }
 }
 

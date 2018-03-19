@@ -90,6 +90,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     public int[] getHostPowerMode() {
         Random rand = new Random();
+        int randomAction = rand.nextInt(5);
 
         String state = observeState();
         System.out.println("state: " + state);
@@ -103,17 +104,6 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         double minQValue = Collections.min(getQTable().get(stateIndex));
         System.out.println("minQValue: " + minQValue);
 
-        for (int i = 0; i < qTable.size(); i++) {
-            for (int j = 0; j < qTable.get(0).size(); j++) {
-                if (qTable.get(i).get(j) == Double.MAX_VALUE) {
-                    System.out.print("-\t");
-                } else {
-                    System.out.print(qTable.get(i).get(j) + "\t");
-                }
-            }
-            System.out.print("\n");
-        }
-
         System.out.println("getSlaViolationTimeList:");
         for (int i = 0; i < getSlaViolationTimeList().size(); i++) {
             System.out.println(i + "\t" + getSlaViolationTimeList().get(i));
@@ -125,21 +115,26 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         }
 
         int actionIndex = 0;
-        if (minQValue == Double.MAX_VALUE) {
-            int counter = 0;
-            for (PowerHost host : this.<PowerHost> getHostList()) {
-                if (host.getVmList().size() != 0 && host.getUtilizationOfCpu() < 0.4) {
-                    actionIndex = host.getId() * 2 + 1;
-                    break;
+        if (randomAction != 0) {
+            if (minQValue == Double.MAX_VALUE) {
+                int counter = 0;
+                for (PowerHost host : this.<PowerHost> getHostList()) {
+                    if (host.getVmList().size() != 0 && host.getUtilizationOfCpu() > 0.0 && host.getUtilizationOfCpu() < 0.4) {
+                        actionIndex = host.getId() * 2 + 1;
+                        break;
+                    }
+                    counter ++;
                 }
-                counter ++;
-            }
-            if (counter == this.<PowerHost> getHostList().size()) {
-                actionIndex = rand.nextInt(getActionsList().size());
+                if (counter == this.<PowerHost> getHostList().size()) {
+                    actionIndex = rand.nextInt(getActionsList().size());
+                }
+            } else {
+                actionIndex = getQTable().get(stateIndex).indexOf(minQValue);
             }
         } else {
-            actionIndex = getQTable().get(stateIndex).indexOf(minQValue);
+            actionIndex = rand.nextInt(getActionsList().size());
         }
+
         System.out.println("actionIndex: " + actionIndex);
 
         double newQvalue = getNewQValue(penalty, minQValue);
@@ -149,7 +144,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         for (int i = 0; i < qTable.size(); i++) {
             for (int j = 0; j < qTable.get(0).size(); j++) {
                 if (qTable.get(i).get(j) == Double.MAX_VALUE) {
-                    System.out.print("-\t");
+                    System.out.print("-\t\t\t\t\t\t");
                 } else {
                     System.out.print(qTable.get(i).get(j) + "\t");
                 }
@@ -157,7 +152,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
             System.out.print("\n");
         }
 
-        previousQValue = getQTable().get(stateIndex).get(actionIndex);
+        previousQValue = newQvalue;
 
         int powerMode = getActionsList().get(actionIndex);
         System.out.println("powerMode: " + powerMode);
@@ -295,6 +290,8 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
             double penalty = ((list.get(size - 1) - list.get(size - 2))/(list.get(size - 2) - list.get(size - 3)));
             if (Double.isNaN(penalty)) {
                 return 1.0;
+            } else if (Double.isInfinite(penalty)) {
+                return Double.MAX_VALUE;
             } else {
                 return penalty;
             }
