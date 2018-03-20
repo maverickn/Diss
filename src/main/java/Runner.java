@@ -57,6 +57,7 @@ public class Runner {
             folder1.mkdir();
         }
 
+        List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
         List<Double> slaViolationTimeList = HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList();
         List<Double> powerConsumptionList = HostPowerModeSelectionPolicyAgent.getPowerConsumptionList();
 
@@ -70,7 +71,7 @@ public class Runner {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(file));
             for (int i = 0; i < slaViolationTimeList.size(); i++) {
-                writer.write(String.format("%.6f;\t%.6f;\t\n", slaViolationTimeList.get(i), powerConsumptionList.get(i)));
+                writer.write(String.format("%.6f;\t%.6f;\t%.6f;\t\n", timeList.get(i), slaViolationTimeList.get(i), powerConsumptionList.get(i)));
             }
             writer.close();
         } catch (IOException e) {

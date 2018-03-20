@@ -3,6 +3,7 @@ package policy;
 import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.HostDynamicWorkload;
 import org.cloudbus.cloudsim.HostStateHistoryEntry;
+import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.power.PowerDatacenter;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVmSelectionPolicy;
@@ -56,6 +57,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * The power consumption list
      */
     private static final List<Double> powerConsumptionList = new ArrayList<>();
+
+    /**
+     * The power consumption list
+     */
+    private static final List<Double> timeList = new ArrayList<>();
 
     /**
      * The previous Q-value
@@ -158,7 +164,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         System.out.println("powerMode: " + powerMode);
 
         if (cnter == 4) {
-            System.exit(0);
+            CloudSim.terminateSimulation();
         } else {
             cnter ++;
         }
@@ -204,6 +210,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
 
         DecimalFormat df = new DecimalFormat("#.##");
         state = df.format(cpuUtilPercent) + df.format(ramUtilPercent) + df.format(bwUtilPercent);
+        getTimeList().add(CloudSim.clock());
         getSlaViolationTime();
         getTotalPower();
         return state;
@@ -413,5 +420,14 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     public static List<Double> getPowerConsumptionList() {
         return powerConsumptionList;
+    }
+
+    /**
+     * Gets the time list
+     *
+     * @return the time list
+     */
+    public static List<Double> getTimeList() {
+        return timeList;
     }
 }
