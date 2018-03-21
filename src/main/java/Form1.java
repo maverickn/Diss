@@ -1,12 +1,15 @@
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import policy.HostPowerModeSelectionPolicyAgent;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -20,7 +23,8 @@ import java.io.File;
 
 public class Form1 {
     private JPanel mainPanel;
-    private JPanel chartPanel;
+    private JPanel panelSlaViolationTimeChart;
+    private JPanel panelPowerConsumptionChart;
 
     private JButton selectConfigButton;
     private JButton runButton;
@@ -29,6 +33,12 @@ public class Form1 {
     private JLabel processingLabel;
 
     private File selectedFile = null;
+
+    private XYPlot plotSlaViolationTime;
+    private int datasetSlaIndex = 0;
+
+    private XYPlot plotPowerConsumption;
+    private int datasetPowerIndex = 0;
 
     public Form1() {
         JFrame frame = new JFrame("Diss");
@@ -39,13 +49,57 @@ public class Form1 {
         frame.setLocationRelativeTo(null);
 
         mainPanel.setLayout(null);
+        panelSlaViolationTimeChart.setBounds(170,10,1050,330);
+        panelSlaViolationTimeChart.setLayout(new BorderLayout());
+        panelPowerConsumptionChart.setBounds(170,355,1050,330);
+        panelPowerConsumptionChart.setLayout(new BorderLayout());
+
         selectConfigButton.setBounds(10,10,150,30);
-        fileNameLabel.setBounds(10,40,300, 30);
         runButton.setBounds(10,70,150,30);
         runButton.setEnabled(false);
+
+        fileNameLabel.setBounds(10,40,300, 30);
         processingLabel.setBounds(10,100,300, 30);
-        chartPanel.setBounds(170,10,1050,690);
-        chartPanel.setLayout(new BorderLayout());
+
+        final JFreeChart slaViolationTimeChart = ChartFactory.createXYLineChart("SLA violation time","Time", "SLA Violation Time",
+                null, PlotOrientation.VERTICAL, true, true, false);
+
+        slaViolationTimeChart.setBackgroundPaint(Color.white);
+        plotSlaViolationTime = slaViolationTimeChart.getXYPlot();
+        plotSlaViolationTime.setBackgroundPaint(Color.lightGray);
+        plotSlaViolationTime.setDomainGridlinePaint(Color.white);
+        plotSlaViolationTime.setRangeGridlinePaint(Color.white);
+
+        final ValueAxis axis1 = plotSlaViolationTime.getDomainAxis();
+        axis1.setAutoRange(true);
+
+        final NumberAxis rangeAxis1 = new NumberAxis("Range Axis 1");
+        rangeAxis1.setAutoRangeIncludesZero(false);
+
+        final ChartPanel chartPanelSla = new ChartPanel(slaViolationTimeChart);
+        panelSlaViolationTimeChart.add(chartPanelSla);
+        chartPanelSla.setDomainZoomable(true);
+
+        final JFreeChart powerConsumptionChart = ChartFactory.createXYLineChart("Power consumption","Time", "SLA Violation Time",
+                null, PlotOrientation.VERTICAL, true, true, false);
+
+        powerConsumptionChart.setBackgroundPaint(Color.white);
+        plotPowerConsumption = powerConsumptionChart.getXYPlot();
+        plotPowerConsumption.setBackgroundPaint(Color.lightGray);
+        plotPowerConsumption.setDomainGridlinePaint(Color.white);
+        plotPowerConsumption.setRangeGridlinePaint(Color.white);
+
+        final ValueAxis axis2 = plotPowerConsumption.getDomainAxis();
+        axis2.setAutoRange(true);
+
+        final NumberAxis rangeAxis2 = new NumberAxis("Range Axis 2");
+        rangeAxis2.setAutoRangeIncludesZero(false);
+
+        final ChartPanel chartPanelPower = new ChartPanel(powerConsumptionChart);
+        panelPowerConsumptionChart.add(chartPanelPower);
+        chartPanelPower.setDomainZoomable(true);
+
+        frame.setVisible(true);
 
         selectConfigButton.addActionListener(new ActionListener() {
             @Override
@@ -71,7 +125,14 @@ public class Form1 {
                 ParseConfig.getData(selectedFile.getAbsolutePath());
                 new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName);
                 processingLabel.setText("Done!");
-                chartPanel.add(getChart(), BorderLayout.NORTH);
+                //panelSlaViolationTimeChart.add(getChart(), BorderLayout.NORTH);
+                datasetSlaIndex++;
+                plotSlaViolationTime.setDataset(datasetSlaIndex, createDatasetSlaViolationTime());
+                plotSlaViolationTime.setRenderer(datasetSlaIndex, new StandardXYItemRenderer());
+
+                datasetPowerIndex++;
+                plotPowerConsumption.setDataset(datasetPowerIndex, createDatasetPowerConsumption());
+                plotPowerConsumption.setRenderer(datasetPowerIndex, new StandardXYItemRenderer());
             }
         });
 
@@ -80,52 +141,33 @@ public class Form1 {
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
                 if (selectedFile != null) {
-                    processingLabel.setText("Output to log file. Please, wait...");
+                    processingLabel.setText("Processing...");
                 }
             }
         });
     }
 
-    private ChartPanel getChart() {
-        JFreeChart xylineChart = ChartFactory.createXYLineChart("","X", "Y",
-                createDataset(), PlotOrientation.VERTICAL, true, true, false);
-
-        ChartPanel chartPanel = new ChartPanel(xylineChart);
-        chartPanel.setPreferredSize(new Dimension(1050,690));
-        final XYPlot plot = xylineChart.getXYPlot();
-
-        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
-        renderer.setSeriesPaint(0, Color.RED);
-        renderer.setSeriesPaint(1, Color.GREEN);
-        renderer.setSeriesPaint(2, Color.YELLOW);
-        renderer.setSeriesStroke(0, new BasicStroke(1.0f));
-        renderer.setSeriesStroke(1, new BasicStroke(1.0f));
-        renderer.setSeriesStroke(2, new BasicStroke(1.0f));
-        plot.setRenderer(renderer);
-        chartPanel.setDomainZoomable(true);
-        return chartPanel;
+    private XYDataset createDatasetSlaViolationTime() {
+        final XYSeries agent = new XYSeries("Q-learning agent");
+        java.util.List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
+        java.util.List<Double> slaViolationTimeList = HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList();
+        for (int i = 0; i < slaViolationTimeList.size(); i++) {
+            agent.add(timeList.get(i),slaViolationTimeList.get(i));
+        }
+        final XYSeriesCollection dataset = new XYSeriesCollection();
+        dataset.addSeries(agent);
+        return dataset;
     }
 
-    private XYDataset createDataset() {
-        final XYSeries test1 = new XYSeries("test1");
-        test1.add(1.0, 1.0);
-        test1.add(2.0, 4.0);
-        test1.add(3.0, 3.0);
-
-        final XYSeries test2 = new XYSeries("test2");
-        test2.add(1.0, 4.0);
-        test2.add(2.0, 5.0);
-        test2.add(3.0, 6.0);
-
-        final XYSeries test3 = new XYSeries("test3");
-        test3.add(3.0, 4.0);
-        test3.add(4.0, 5.0);
-        test3.add(5.0, 4.0);
-
+    private XYDataset createDatasetPowerConsumption() {
+        final XYSeries agent = new XYSeries("Q-learning agent");
+        java.util.List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
+        java.util.List<Double> powerConsumptionList = HostPowerModeSelectionPolicyAgent.getPowerConsumptionList();
+        for (int i = 0; i < powerConsumptionList.size(); i++) {
+            agent.add(timeList.get(i),powerConsumptionList.get(i));
+        }
         final XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(test1);
-        dataset.addSeries(test2);
-        dataset.addSeries(test3);
+        dataset.addSeries(agent);
         return dataset;
     }
 
