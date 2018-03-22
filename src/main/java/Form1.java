@@ -44,7 +44,6 @@ public class Form1 {
         JFrame frame = new JFrame("Diss");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setContentPane(mainPanel);
-        frame.setVisible(true);
         frame.setSize(1250, 750);
         frame.setLocationRelativeTo(null);
 
@@ -80,7 +79,7 @@ public class Form1 {
         panelSlaViolationTimeChart.add(chartPanelSla);
         chartPanelSla.setDomainZoomable(true);
 
-        final JFreeChart powerConsumptionChart = ChartFactory.createXYLineChart("Power consumption","Time", "SLA Violation Time",
+        final JFreeChart powerConsumptionChart = ChartFactory.createXYLineChart("Power consumption","Time", "Power consumption",
                 null, PlotOrientation.VERTICAL, true, true, false);
 
         powerConsumptionChart.setBackgroundPaint(Color.white);
@@ -99,6 +98,7 @@ public class Form1 {
         panelPowerConsumptionChart.add(chartPanelPower);
         chartPanelPower.setDomainZoomable(true);
 
+        frame.setExtendedState(JFrame.MAXIMIZED_BOTH);
         frame.setVisible(true);
 
         selectConfigButton.addActionListener(new ActionListener() {
