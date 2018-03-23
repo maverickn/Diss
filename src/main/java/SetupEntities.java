@@ -74,8 +74,7 @@ public class SetupEntities {
 		double costPerBw = 0.0; // the cost of using bw in this resource
 		DatacenterCharacteristics characteristics = new DatacenterCharacteristics(
 				arch, os, vmm, hostList, time_zone, cost, costPerMem, costPerStorage, costPerBw);
-		Datacenter datacenter = null;
-		datacenter = datacenterClass.getConstructor(
+		Datacenter datacenter = datacenterClass.getConstructor(
 					String.class,
 					DatacenterCharacteristics.class,
 					VmAllocationPolicy.class,

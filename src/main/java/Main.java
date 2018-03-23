@@ -25,7 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-public class Form1 {
+public class Main {
     private JPanel mainPanel;
     private JPanel slaPanel;
     private JPanel powerPanel;
@@ -37,6 +37,9 @@ public class Form1 {
     private JLabel fileNameLabel;
     private JLabel processingLabel;
 
+    private JRadioButton agentRadioButton;
+    private JRadioButton nonPowerAwareRadioButton;
+
     private File selectedFile = null;
 
     private XYPlot slaPlot;
@@ -47,7 +50,7 @@ public class Form1 {
     private int datasetPowerIndex = 0;
     private int datasetMigrationIndex = 0;
 
-    public Form1() {
+    public Main() {
         JFrame frame = new JFrame("Diss");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setContentPane(mainPanel);
@@ -66,8 +69,15 @@ public class Form1 {
         runButton.setBounds(10,70,150,30);
         runButton.setEnabled(false);
 
-        fileNameLabel.setBounds(10,40,300, 30);
-        processingLabel.setBounds(10,100,300, 30);
+        fileNameLabel.setBounds(10,40,150, 30);
+        processingLabel.setBounds(10,100,150, 30);
+
+        agentRadioButton.setBounds(10,130,150,30);
+        nonPowerAwareRadioButton.setBounds(10,160,150,30);
+
+        ButtonGroup bg = new ButtonGroup();
+        bg.add(agentRadioButton);
+        bg.add(nonPowerAwareRadioButton);
 
         final JFreeChart slaChart = ChartFactory.createXYLineChart("SLA violation time","Time", "SLA Violation Time",
                 null, PlotOrientation.VERTICAL, true, true, false);
@@ -144,17 +154,17 @@ public class Form1 {
                     return;
                 }
                 try {
-                    new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName);
-
-                    datasetSlaIndex++;
-                    slaPlot.setDataset(datasetSlaIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList(), "Q-learning agent"));
-                    slaPlot.setRenderer(datasetSlaIndex, new StandardXYItemRenderer());
-
-                    datasetPowerIndex++;
-                    powerPlot.setDataset(datasetPowerIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getPowerConsumptionList(), "Q-learning agent"));
-                    powerPlot.setRenderer(datasetPowerIndex, new StandardXYItemRenderer());
-                    processingLabel.setText("Done!");
-                    frame.toFront();
+                    if (agentRadioButton.isSelected()) {
+                        new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName, "qla");
+                        plotCharts("Q-learning agent");
+                    }
+                    if (nonPowerAwareRadioButton.isSelected()) {
+                        Runner.nonPowerAwareModelling("npa");
+                    }
+                    if (bg.getSelection() != null) {
+                        processingLabel.setText("Done!");
+                        frame.toFront();
+                    }
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, "Simulation terminated! Catching exception:\n" + ex.toString(),
                             "Exception", JOptionPane.ERROR_MESSAGE);
@@ -168,7 +178,7 @@ public class Form1 {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                if (selectedFile != null) {
+                if (bg.getSelection() != null) {
                     processingLabel.setText("Processing...");
                 }
             }
@@ -185,7 +195,17 @@ public class Form1 {
         return dataset;
     }
 
+    private void plotCharts(String chartName) {
+        datasetSlaIndex++;
+        slaPlot.setDataset(datasetSlaIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList(), chartName));
+        slaPlot.setRenderer(datasetSlaIndex, new StandardXYItemRenderer());
+
+        datasetPowerIndex++;
+        powerPlot.setDataset(datasetPowerIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getPowerConsumptionList(), chartName));
+        powerPlot.setRenderer(datasetPowerIndex, new StandardXYItemRenderer());
+    }
+
     public static void main(String[] args) {
-        new Form1();
+        new Main();
     }
 }
