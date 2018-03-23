@@ -6,6 +6,7 @@ import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.power.PowerDatacenterNonPowerAware;
 import org.cloudbus.cloudsim.power.PowerHost;
 import org.cloudbus.cloudsim.power.PowerVmAllocationPolicySimple;
+import org.json.simple.parser.ParseException;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -14,7 +15,15 @@ import java.util.List;
 public class NonPowerAware {
 
     public static void main(String[] args) {
-        ParseConfig.getData("dc_config_bitbrains.json");
+        try {
+            ParseConfig.getData("dc_config_bitbrains.json");
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(0);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
         try {
             Runner.initLogOutput(ParseConfig.outputFolder, ParseConfig.experimentName);
         } catch (IOException e) {

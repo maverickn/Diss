@@ -14,8 +14,7 @@ public class UtilizationModelPlanetLab implements UtilizationModel {
     private final double[] data;
 
     public UtilizationModelPlanetLab(String inputPath, double schedulingInterval)
-            throws NumberFormatException,
-            IOException {
+            throws NumberFormatException, IOException {
         data = new double[289];
         setSchedulingInterval(schedulingInterval);
         BufferedReader input = new BufferedReader(new FileReader(inputPath));
@@ -28,8 +27,7 @@ public class UtilizationModelPlanetLab implements UtilizationModel {
     }
 
     public UtilizationModelPlanetLab(String inputPath, double schedulingInterval, int dataSamples)
-            throws NumberFormatException,
-            IOException {
+            throws NumberFormatException, IOException {
         setSchedulingInterval(schedulingInterval);
         data = new double[dataSamples];
         BufferedReader input = new BufferedReader(new FileReader(inputPath));

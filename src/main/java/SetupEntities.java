@@ -1,5 +1,6 @@
 import java.io.*;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 import models.utilization.UtilizationModelBitbrains;
@@ -51,14 +52,9 @@ public class SetupEntities {
 		return hostList;
 	}
 
-	public static DatacenterBroker createBroker() {
+	public static DatacenterBroker createBroker() throws Exception {
 		DatacenterBroker broker = null;
-		try {
-			broker = new PowerDatacenterBroker("Broker");
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
+		broker = new PowerDatacenterBroker("Broker");
 		return broker;
 	}
 
@@ -66,7 +62,8 @@ public class SetupEntities {
 			String name,
 			Class<? extends Datacenter> datacenterClass,
 			List<PowerHost> hostList,
-			VmAllocationPolicy vmAllocationPolicy) throws Exception {
+			VmAllocationPolicy vmAllocationPolicy)
+			throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
 		String arch = "x86";
 		String os = "Linux";
 		String vmm = "Xen";
@@ -78,8 +75,7 @@ public class SetupEntities {
 		DatacenterCharacteristics characteristics = new DatacenterCharacteristics(
 				arch, os, vmm, hostList, time_zone, cost, costPerMem, costPerStorage, costPerBw);
 		Datacenter datacenter = null;
-		try {
-			datacenter = datacenterClass.getConstructor(
+		datacenter = datacenterClass.getConstructor(
 					String.class,
 					DatacenterCharacteristics.class,
 					VmAllocationPolicy.class,
@@ -90,38 +86,29 @@ public class SetupEntities {
 						vmAllocationPolicy,
 						new LinkedList<Storage>(),
                     ParseConfig.schedulingInterval);
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(0);
-		}
 		return datacenter;
 	}
 
-	public static List<Cloudlet> createCloudletList(int brokerId, String inputFolderName) throws FileNotFoundException {
+	public static List<Cloudlet> createCloudletList(int brokerId, String inputFolderName)
+			throws IOException {
 		List<Cloudlet> list = new ArrayList<>();
 		long fileSize = 300;
 		long outputSize = 300;
 		java.io.File inputFolder = new java.io.File(inputFolderName);
 		File[] files = inputFolder.listFiles();
 		for (int i = 0; i < files.length; i++) {
-			Cloudlet cloudlet = null;
-			try {
-				cloudlet = new Cloudlet(
-						i,
-                        CLOUDLET_LENGTH,
-                        CLOUDLET_PES,
-						fileSize,
-						outputSize,
-						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
-								ParseConfig.simulationLimit / ParseConfig.schedulingInterval),
-						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
-								ParseConfig.simulationLimit / ParseConfig.schedulingInterval, ParseConfig.vmRam),
-						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
-								ParseConfig.simulationLimit / ParseConfig.schedulingInterval, ParseConfig.vmBw));
-			} catch (Exception e) {
-				e.printStackTrace();
-				System.exit(0);
-			}
+			Cloudlet cloudlet = new Cloudlet(
+					i,
+					CLOUDLET_LENGTH,
+					CLOUDLET_PES,
+					fileSize,
+					outputSize,
+					new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
+							ParseConfig.simulationLimit / ParseConfig.schedulingInterval),
+					new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
+							ParseConfig.simulationLimit / ParseConfig.schedulingInterval, ParseConfig.vmRam),
+					new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval,
+							ParseConfig.simulationLimit / ParseConfig.schedulingInterval, ParseConfig.vmBw));
 			cloudlet.setUserId(brokerId);
 			cloudlet.setVmId(i);
 			list.add(cloudlet);

@@ -110,7 +110,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         double minQValue = Collections.min(getQTable().get(stateIndex));
         System.out.println("minQValue: " + minQValue);
 
-        System.out.println("getSlaViolationTimeList:");
+        /*System.out.println("getSlaViolationTimeList:");
         for (int i = 0; i < getSlaViolationTimeList().size(); i++) {
             System.out.println(i + "\t" + getSlaViolationTimeList().get(i));
         }
@@ -118,7 +118,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         System.out.println("getPowerConsumptionList:");
         for (int i = 0; i < getPowerConsumptionList().size(); i++) {
             System.out.println(i + "\t" + getPowerConsumptionList().get(i));
-        }
+        }*/
 
         int actionIndex = 0;
         if (randomAction != 0) {
@@ -147,7 +147,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         System.out.println("newQvalue: " + newQvalue);
 
         getQTable().get(stateIndex).set(actionIndex, newQvalue);
-        for (int i = 0; i < qTable.size(); i++) {
+        /*for (int i = 0; i < qTable.size(); i++) {
             for (int j = 0; j < qTable.get(0).size(); j++) {
                 if (qTable.get(i).get(j) == Double.MAX_VALUE) {
                     System.out.print("-\t\t\t\t\t\t");
@@ -156,7 +156,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
                 }
             }
             System.out.print("\n");
-        }
+        }*/
 
         previousQValue = newQvalue;
 

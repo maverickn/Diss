@@ -14,8 +14,7 @@ public class UtilizationModelBitbrains implements UtilizationModel {
     private final double[] data;
 
     public UtilizationModelBitbrains(String inputPath, double schedulingInterval, int dataSamples)
-            throws NumberFormatException,
-            IOException {
+            throws NumberFormatException, IOException {
         setSchedulingInterval(schedulingInterval);
         data = new double[dataSamples + 1];
         BufferedReader input = new BufferedReader(new FileReader(inputPath));
@@ -31,8 +30,7 @@ public class UtilizationModelBitbrains implements UtilizationModel {
     }
 
     public UtilizationModelBitbrains(String inputPath, double schedulingInterval, int dataSamples, int[] vmRam)
-            throws NumberFormatException,
-            IOException {
+            throws NumberFormatException, IOException {
         setSchedulingInterval(schedulingInterval);
         int maxRam = Arrays.stream(vmRam).max().getAsInt() * 1024;
         data = new double[dataSamples + 1];
@@ -49,8 +47,7 @@ public class UtilizationModelBitbrains implements UtilizationModel {
     }
 
     public UtilizationModelBitbrains(String inputPath, double schedulingInterval, int dataSamples, int vmBw)
-            throws NumberFormatException,
-            IOException {
+            throws NumberFormatException, IOException {
         setSchedulingInterval(schedulingInterval);
         data = new double[dataSamples + 1];
         BufferedReader input = new BufferedReader(new FileReader(inputPath));

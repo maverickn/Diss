@@ -1,3 +1,4 @@
+import org.cloudbus.cloudsim.core.CloudSim;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -9,6 +10,7 @@ import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.json.simple.parser.ParseException;
 import policy.HostPowerModeSelectionPolicyAgent;
 
 import javax.swing.*;
@@ -20,6 +22,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class Form1 {
@@ -122,17 +125,42 @@ public class Form1 {
         runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ParseConfig.getData(selectedFile.getAbsolutePath());
-                new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName);
-                processingLabel.setText("Done!");
+                try {
+                    ParseConfig.getData(selectedFile.getAbsolutePath());
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(frame, "Config file not found.\n" + ex.toString(),
+                            "Config file not found", JOptionPane.ERROR_MESSAGE);
+                    processingLabel.setText("");
+                    return;
+                } catch (ParseException ex) {
+                    JOptionPane.showMessageDialog(frame, "Catching exception while parsing a config file.\n" + ex.toString(),
+                            "Parse exception", JOptionPane.ERROR_MESSAGE);
+                    processingLabel.setText("");
+                    return;
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Catching exception:\n" + ex.toString(),
+                            "Exception", JOptionPane.ERROR_MESSAGE);
+                    processingLabel.setText("");
+                    return;
+                }
+                try {
+                    new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName);
 
-                datasetSlaIndex++;
-                slaPlot.setDataset(datasetSlaIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList(), "Q-learning agent"));
-                slaPlot.setRenderer(datasetSlaIndex, new StandardXYItemRenderer());
+                    datasetSlaIndex++;
+                    slaPlot.setDataset(datasetSlaIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList(), "Q-learning agent"));
+                    slaPlot.setRenderer(datasetSlaIndex, new StandardXYItemRenderer());
 
-                datasetPowerIndex++;
-                powerPlot.setDataset(datasetPowerIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getPowerConsumptionList(), "Q-learning agent"));
-                powerPlot.setRenderer(datasetPowerIndex, new StandardXYItemRenderer());
+                    datasetPowerIndex++;
+                    powerPlot.setDataset(datasetPowerIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getPowerConsumptionList(), "Q-learning agent"));
+                    powerPlot.setRenderer(datasetPowerIndex, new StandardXYItemRenderer());
+                    processingLabel.setText("Done!");
+                    frame.toFront();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(frame, "Simulation terminated! Catching exception:\n" + ex.toString(),
+                            "Exception", JOptionPane.ERROR_MESSAGE);
+                    CloudSim.terminateSimulation();
+                    processingLabel.setText("");
+                }
             }
         });
 
