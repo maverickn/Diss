@@ -1,8 +1,9 @@
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.power.*;
-import org.json.simple.parser.ParseException;
 import policy.HostPowerModeSelectionPolicyAgent;
+import policy.VmAllocationPolicyLocalRegression;
+import policy.VmAllocationPolicyNonPowerAware;
 
 import java.io.*;
 import java.io.File;
@@ -11,25 +12,33 @@ import java.util.List;
 
 public class Runner {
 
-    protected static DatacenterBroker broker;
+    private DatacenterBroker broker;
 
-    protected static List<Cloudlet> cloudletList;
+    private List<Cloudlet> cloudletList;
 
-    protected static List<Vm> vmList;
+    private List<Vm> vmList;
 
-    protected static List<PowerHost> hostList;
+    private List<PowerHost> hostList;
 
     public Runner(String inputFolder, String outputFolder, String experimentName, String policyName) throws Exception {
         initLogOutput(outputFolder, experimentName, policyName);
         init(inputFolder + "/" + experimentName);
         VmAllocationPolicy vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower,
                 new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
+
+        /*VmAllocationPolicy vap = new VmAllocationPolicyLocalRegression(hostList,
+                new PowerVmSelectionPolicyMinimumMigrationTime(),
+                1.2,
+                ParseConfig.schedulingInterval,
+                new PowerVmAllocationPolicyMigrationStaticThreshold(
+                        hostList,
+                        new PowerVmSelectionPolicyMinimumMigrationTime(),
+                        0.7));*/
         start(experimentName, outputFolder, vap, policyName);
     }
 
     public static void initLogOutput(String outputFolder, String experimentName, String policyName) throws IOException {
         Log.enable();
-        System.out.println("Output to log file. Please, wait...");
         File folder = new File(outputFolder);
         if (!folder.exists()) {
             folder.mkdir();
@@ -56,17 +65,18 @@ public class Runner {
         List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
         List<Double> slaViolationTimeList = HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList();
         List<Double> powerConsumptionList = HostPowerModeSelectionPolicyAgent.getPowerConsumptionList();
+        List<Double> migrationCountList = HostPowerModeSelectionPolicyAgent.getMigrationCountList();
 
         File file = new File(outputFolder + "/metrics/" + policyName + "_" + experimentName + "_metric.csv");
         file.createNewFile();
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
-        for (int i = 0; i < slaViolationTimeList.size(); i++) {
-            writer.write(String.format("%.6f;\t%.6f;\t%.6f;\t\n", timeList.get(i), slaViolationTimeList.get(i), powerConsumptionList.get(i)));
+        for (int i = 0; i < timeList.size(); i++) {
+            writer.write(String.format("%.6f;\t%.6f;\t%.6f;\t%.6f;\t\n", timeList.get(i), slaViolationTimeList.get(i), powerConsumptionList.get(i), migrationCountList.get(i)));
         }
         writer.close();
     }
 
-    protected void init(String experimentFolder) throws Exception {
+    private void init(String experimentFolder) throws Exception {
         CloudSim.init(1, Calendar.getInstance(), false);
         broker = SetupEntities.createBroker();
         int brokerId = broker.getId();
@@ -75,7 +85,7 @@ public class Runner {
         hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
     }
 
-    protected void start(String experimentName, String outputFolder, VmAllocationPolicy vmAllocationPolicy, String policyName) throws Exception {
+    private void start(String experimentName, String outputFolder, VmAllocationPolicy vmAllocationPolicy, String policyName) throws Exception {
         Log.printLine("Starting " + experimentName);
         PowerDatacenter datacenter = (PowerDatacenter) SetupEntities.createDatacenter("Datacenter",
                 PowerDatacenter.class, hostList, vmAllocationPolicy);
@@ -83,27 +93,24 @@ public class Runner {
         broker.submitVmList(vmList);
         broker.submitCloudletList(cloudletList);
         CloudSim.terminateSimulation(ParseConfig.simulationLimit);
-        //double lastClock =
         CloudSim.startSimulation();
         List<Cloudlet> newList = broker.getCloudletReceivedList();
         Log.printLine("Received " + newList.size() + " cloudlets");
         CloudSim.stopSimulation();
-        //SetupEntities.printResults(datacenter, vmList, lastClock, experimentName, outputFolder);
         printResults(outputFolder, experimentName, policyName);
         Log.printLine("Finished " + experimentName);
-        System.out.println("Done!");
     }
 
-    public static void nonPowerAwareModelling(String policyName) throws Exception {
-        Runner.initLogOutput(ParseConfig.outputFolder, ParseConfig.experimentName, policyName);
-        Log.printLine("Starting " + ParseConfig.experimentName);
+    public static void nonPowerAwareModelling(String inputFolder, String outputFolder, String experimentName, String policyName) throws Exception {
+        Runner.initLogOutput(outputFolder, experimentName, policyName);
+        Log.printLine("Starting " + experimentName);
 
         CloudSim.init(1, Calendar.getInstance(), false);
 
         DatacenterBroker broker = SetupEntities.createBroker();
         int brokerId = broker.getId();
 
-        List<Cloudlet> cloudletList = SetupEntities.createCloudletList(brokerId, ParseConfig.inputFolder + "/" + ParseConfig.experimentName);
+        List<Cloudlet> cloudletList = SetupEntities.createCloudletList(brokerId, inputFolder + "/" + experimentName);
         List<Vm> vmList = SetupEntities.createVmList(brokerId, cloudletList.size());
         List<PowerHost> hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
 
@@ -111,9 +118,7 @@ public class Runner {
                 "Datacenter",
                 PowerDatacenterNonPowerAware.class,
                 hostList,
-                new PowerVmAllocationPolicySimple(hostList));
-
-        datacenter.setDisableMigrations(true);
+                new VmAllocationPolicyNonPowerAware(hostList));
 
         broker.submitVmList(vmList);
         broker.submitCloudletList(cloudletList);
@@ -125,8 +130,9 @@ public class Runner {
         Log.printLine("Received " + newList.size() + " cloudlets");
 
         CloudSim.stopSimulation();
+        printResults(outputFolder, experimentName, policyName);
 
-        Log.printLine("Finished " + ParseConfig.experimentName);
+        Log.printLine("Finished " + experimentName);
     }
 
 }

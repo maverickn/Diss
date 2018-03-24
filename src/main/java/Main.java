@@ -39,6 +39,7 @@ public class Main {
 
     private JRadioButton agentRadioButton;
     private JRadioButton nonPowerAwareRadioButton;
+    private ButtonGroup bg;
 
     private File selectedFile = null;
 
@@ -57,27 +58,10 @@ public class Main {
         frame.setSize(1250, 1000);
         frame.setLocationRelativeTo(null);
 
-        mainPanel.setLayout(null);
-        slaPanel.setBounds(170,10,1050,290);
-        slaPanel.setLayout(new BorderLayout());
-        powerPanel.setBounds(170,320,1050,290);
-        powerPanel.setLayout(new BorderLayout());
-        migrationPanel.setBounds(170,630,1050,290);
-        migrationPanel.setLayout(new BorderLayout());
-
-        selectConfigButton.setBounds(10,10,150,30);
-        runButton.setBounds(10,70,150,30);
-        runButton.setEnabled(false);
-
-        fileNameLabel.setBounds(10,40,150, 30);
-        processingLabel.setBounds(10,100,150, 30);
-
-        agentRadioButton.setBounds(10,130,150,30);
-        nonPowerAwareRadioButton.setBounds(10,160,150,30);
-
-        ButtonGroup bg = new ButtonGroup();
-        bg.add(agentRadioButton);
-        bg.add(nonPowerAwareRadioButton);
+        setUpPanels();
+        setUpButtons();
+        setUpLabels();
+        setUpRadioButtons();
 
         final JFreeChart slaChart = ChartFactory.createXYLineChart("SLA violation time","Time", "SLA Violation Time",
                 null, PlotOrientation.VERTICAL, true, true, false);
@@ -135,20 +119,24 @@ public class Main {
         runButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                HostPowerModeSelectionPolicyAgent.getTimeList().clear();
+                HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList().clear();
+                HostPowerModeSelectionPolicyAgent.getPowerConsumptionList().clear();
+                HostPowerModeSelectionPolicyAgent.getMigrationCountList().clear();
                 try {
                     ParseConfig.getData(selectedFile.getAbsolutePath());
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(frame, "Config file not found.\n" + ex.toString(),
+                    JOptionPane.showMessageDialog(frame, "Config file not found.\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
                             "Config file not found", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
                 } catch (ParseException ex) {
-                    JOptionPane.showMessageDialog(frame, "Catching exception while parsing a config file.\n" + ex.toString(),
+                    JOptionPane.showMessageDialog(frame, "Catching exception while parsing a config file.\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
                             "Parse exception", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, "Catching exception:\n" + ex.toString(),
+                    JOptionPane.showMessageDialog(frame, "Catching exception:\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
                             "Exception", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
@@ -159,14 +147,15 @@ public class Main {
                         plotCharts("Q-learning agent");
                     }
                     if (nonPowerAwareRadioButton.isSelected()) {
-                        Runner.nonPowerAwareModelling("npa");
+                        Runner.nonPowerAwareModelling(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName,"npa");
+                        plotCharts("Non power aware");
                     }
                     if (bg.getSelection() != null) {
                         processingLabel.setText("Done!");
                         frame.toFront();
                     }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, "Simulation terminated! Catching exception:\n" + ex.toString(),
+                    JOptionPane.showMessageDialog(frame, "Simulation terminated! Catching exception:\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
                             "Exception", JOptionPane.ERROR_MESSAGE);
                     CloudSim.terminateSimulation();
                     processingLabel.setText("");
@@ -196,14 +185,59 @@ public class Main {
     }
 
     private void plotCharts(String chartName) {
+        List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
+
         datasetSlaIndex++;
-        slaPlot.setDataset(datasetSlaIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList(), chartName));
+        slaPlot.setDataset(datasetSlaIndex, createDataset(timeList, HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList(), chartName));
         slaPlot.setRenderer(datasetSlaIndex, new StandardXYItemRenderer());
 
         datasetPowerIndex++;
-        powerPlot.setDataset(datasetPowerIndex, createDataset(HostPowerModeSelectionPolicyAgent.getTimeList(), HostPowerModeSelectionPolicyAgent.getPowerConsumptionList(), chartName));
+        powerPlot.setDataset(datasetPowerIndex, createDataset(timeList, HostPowerModeSelectionPolicyAgent.getPowerConsumptionList(), chartName));
         powerPlot.setRenderer(datasetPowerIndex, new StandardXYItemRenderer());
+
+        datasetMigrationIndex++;
+        migrationPlot.setDataset(datasetMigrationIndex, createDataset(timeList, HostPowerModeSelectionPolicyAgent.getMigrationCountList(), chartName));
+        migrationPlot.setRenderer(datasetMigrationIndex, new StandardXYItemRenderer());
     }
+
+    private void setUpPanels() {
+        mainPanel.setLayout(null);
+        slaPanel.setBounds(170,10,1050,290);
+        slaPanel.setLayout(new BorderLayout());
+        powerPanel.setBounds(170,320,1050,290);
+        powerPanel.setLayout(new BorderLayout());
+        migrationPanel.setBounds(170,630,1050,290);
+        migrationPanel.setLayout(new BorderLayout());
+    }
+
+    private void setUpButtons() {
+        selectConfigButton.setBounds(10,10,150,30);
+        runButton.setBounds(10,70,150,30);
+        runButton.setEnabled(false);
+    }
+
+    private void setUpLabels() {
+        fileNameLabel.setBounds(10,40,150, 30);
+        processingLabel.setBounds(10,100,150, 30);
+    }
+
+    private void setUpRadioButtons() {
+        agentRadioButton.setBounds(10,130,150,30);
+        nonPowerAwareRadioButton.setBounds(10,160,150,30);
+        bg = new ButtonGroup();
+        bg.add(agentRadioButton);
+        bg.add(nonPowerAwareRadioButton);
+    }
+
+    private String getStackTrace(StackTraceElement[] ste) {
+        String errMsg = null;
+        for (StackTraceElement s : ste) {
+            errMsg += s;
+            errMsg += "\n\t";
+        }
+        return errMsg;
+    }
+
 
     public static void main(String[] args) {
         new Main();

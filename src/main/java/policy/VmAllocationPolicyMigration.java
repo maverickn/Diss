@@ -88,6 +88,9 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
      */
     @Override
     public List<Map<String, Object>> optimizeAllocation(List<? extends Vm> vmList) {
+        HostPowerModeSelectionPolicyAgent.getTimeList().add(CloudSim.clock());
+        HostPowerModeSelectionPolicyAgent.getSlaViolationTime(getHostList());
+        HostPowerModeSelectionPolicyAgent.getTotalPowerAndMigrationCount(getHostList());
         ExecutionTimeMeasurer.start("optimizeAllocationTotal");
 
         int[] actionIdAndHostPowerMode = getHostPowerMode();

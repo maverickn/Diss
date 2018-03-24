@@ -4,9 +4,7 @@ import org.cloudbus.cloudsim.Host;
 import org.cloudbus.cloudsim.HostDynamicWorkload;
 import org.cloudbus.cloudsim.HostStateHistoryEntry;
 import org.cloudbus.cloudsim.core.CloudSim;
-import org.cloudbus.cloudsim.power.PowerDatacenter;
-import org.cloudbus.cloudsim.power.PowerHost;
-import org.cloudbus.cloudsim.power.PowerVmSelectionPolicy;
+import org.cloudbus.cloudsim.power.*;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -57,6 +55,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * The power consumption list
      */
     private static final List<Double> powerConsumptionList = new ArrayList<>();
+
+    /**
+     * The VM migration count list
+     */
+    private static final List<Double> migrationCountList = new ArrayList<>();
 
     /**
      * The power consumption list
@@ -210,9 +213,6 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
 
         DecimalFormat df = new DecimalFormat("#.##");
         state = df.format(cpuUtilPercent) + df.format(ramUtilPercent) + df.format(bwUtilPercent);
-        getTimeList().add(CloudSim.clock());
-        getSlaViolationTime();
-        getTotalPower();
         return state;
     }
 
@@ -224,7 +224,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     private int saveState(String state) {
         if (getStatesList().isEmpty()) {
-            for (int i = 0; i < this.getHostList().size(); i++) {
+            for (int i = 0; i < getHostList().size(); i++) {
                 getActionsList().add(1);
                 getActionsList().add(-1);
             }
@@ -251,9 +251,9 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     /**
      * Gets total SLA violation time per each active host.
      */
-    private void getSlaViolationTime() {
+    public static void getSlaViolationTime(List<HostDynamicWorkload> hosts) {
         double slaViolationTimePerHost = 0;
-        for (HostDynamicWorkload host : this.<HostDynamicWorkload> getHostList()) {
+        for (HostDynamicWorkload host : hosts) {
             double previousTime = -1;
             double previousAllocated = 0;
             double previousRequested = 0;
@@ -277,10 +277,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     /**
      * Gets datacenter power.
      */
-    private void getTotalPower() {
-        Host host = getHostList().get(0);
+    public static void getTotalPowerAndMigrationCount(List<Host> hosts) {
+        Host host = hosts.get(0);
         PowerDatacenter datacenter = (PowerDatacenter) host.getDatacenter();
         getPowerConsumptionList().add(datacenter.getPower() / (3600 * 1000));
+        getMigrationCountList().add((double) datacenter.getMigrationCount());
     }
 
     /**
@@ -420,6 +421,15 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     public static List<Double> getPowerConsumptionList() {
         return powerConsumptionList;
+    }
+
+    /**
+     * Gets the VM migration count list
+     *
+     * @return the VM migration count list
+     */
+    public static List<Double> getMigrationCountList() {
+        return migrationCountList;
     }
 
     /**
