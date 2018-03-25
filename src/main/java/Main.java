@@ -17,10 +17,7 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -37,9 +34,7 @@ public class Main {
     private JLabel fileNameLabel;
     private JLabel processingLabel;
 
-    private JRadioButton agentRadioButton;
-    private JRadioButton nonPowerAwareRadioButton;
-    private ButtonGroup bg;
+    private JComboBox comboBox;
 
     private File selectedFile = null;
 
@@ -61,7 +56,7 @@ public class Main {
         setUpPanels();
         setUpButtons();
         setUpLabels();
-        setUpRadioButtons();
+        setUpComboBox();
 
         final JFreeChart slaChart = ChartFactory.createXYLineChart("SLA violation time","Time", "SLA Violation Time",
                 null, PlotOrientation.VERTICAL, true, true, false);
@@ -110,7 +105,9 @@ public class Main {
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
                     selectedFile = jfc.getSelectedFile();
                     fileNameLabel.setText(selectedFile.getName());
-                    runButton.setEnabled(true);
+                    if (comboBox.getSelectedItem() != null) {
+                        runButton.setEnabled(true);
+                    }
                     processingLabel.setText("");
                 }
             }
@@ -142,15 +139,15 @@ public class Main {
                     return;
                 }
                 try {
-                    if (agentRadioButton.isSelected()) {
+                    if (comboBox.getSelectedItem() == "Q-learning agent") {
                         new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName, "qla");
                         plotCharts("Q-learning agent");
                     }
-                    if (nonPowerAwareRadioButton.isSelected()) {
+                    if (comboBox.getSelectedItem() == "Non power aware") {
                         Runner.nonPowerAwareModelling(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName,"npa");
                         plotCharts("Non power aware");
                     }
-                    if (bg.getSelection() != null) {
+                    if (comboBox.getSelectedItem() != null) {
                         processingLabel.setText("Done!");
                         frame.toFront();
                     }
@@ -167,8 +164,20 @@ public class Main {
             @Override
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
-                if (bg.getSelection() != null) {
+                if (comboBox.getSelectedItem() != null) {
                     processingLabel.setText("Processing...");
+                }
+            }
+        });
+
+        comboBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (selectedFile != null) {
+                    runButton.setEnabled(true);
+                }
+                if (comboBox.getSelectedItem() == null) {
+                    runButton.setEnabled(false);
                 }
             }
         });
@@ -212,21 +221,41 @@ public class Main {
 
     private void setUpButtons() {
         selectConfigButton.setBounds(10,10,150,30);
-        runButton.setBounds(10,70,150,30);
+        runButton.setBounds(10,110,150,30);
         runButton.setEnabled(false);
     }
 
     private void setUpLabels() {
         fileNameLabel.setBounds(10,40,150, 30);
-        processingLabel.setBounds(10,100,150, 30);
+        processingLabel.setBounds(10,140,150, 30);
     }
 
-    private void setUpRadioButtons() {
-        agentRadioButton.setBounds(10,130,150,30);
-        nonPowerAwareRadioButton.setBounds(10,160,150,30);
-        bg = new ButtonGroup();
-        bg.add(agentRadioButton);
-        bg.add(nonPowerAwareRadioButton);
+    private void setUpComboBox() {
+        comboBox.setBounds(10,70,150,30);
+        comboBox.addItem(null);
+        comboBox.addItem("Q-learning agent");
+        comboBox.addItem("Non power aware");
+        comboBox.addItem("Dvfs");
+        comboBox.addItem("Iqr Mc");
+        comboBox.addItem("Iqr Mmt");
+        comboBox.addItem("Iqr Mu");
+        comboBox.addItem("Iqr Rs");
+        comboBox.addItem("Lr Mc");
+        comboBox.addItem("Lr Mmt");
+        comboBox.addItem("Lr Mu");
+        comboBox.addItem("Lr Rs");
+        comboBox.addItem("Lrr Mc");
+        comboBox.addItem("Lrr Mmt");
+        comboBox.addItem("Lrr Mu");
+        comboBox.addItem("Lrr Rs");
+        comboBox.addItem("Mad Mc");
+        comboBox.addItem("Mad Mmt");
+        comboBox.addItem("Mad Mu");
+        comboBox.addItem("Mad Rs");
+        comboBox.addItem("Thr Mc");
+        comboBox.addItem("Thr Mmt");
+        comboBox.addItem("Thr Mu");
+        comboBox.addItem("Thr Rs");
     }
 
     private String getStackTrace(StackTraceElement[] ste) {
@@ -237,7 +266,6 @@ public class Main {
         }
         return errMsg;
     }
-
 
     public static void main(String[] args) {
         new Main();
