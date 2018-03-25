@@ -139,18 +139,14 @@ public class Main {
                     return;
                 }
                 try {
-                    if (comboBox.getSelectedItem() == "Q-learning agent") {
-                        new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName, "qla");
-                        plotCharts("Q-learning agent");
+                    String policyName = comboBox.getSelectedItem().toString();
+                    new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName, policyName);
+                    if (policyName.equals("Q-learning agent")) {
+                        policyName += " lr " + ParseConfig.learningRate + " df " + ParseConfig.discountFactor + " cs " + ParseConfig.cofImportanceSla + " cp " + ParseConfig.cofImportancePower;
                     }
-                    if (comboBox.getSelectedItem() == "Non power aware") {
-                        Runner.nonPowerAwareModelling(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName,"npa");
-                        plotCharts("Non power aware");
-                    }
-                    if (comboBox.getSelectedItem() != null) {
-                        processingLabel.setText("Done!");
-                        frame.toFront();
-                    }
+                    plotCharts(policyName);
+                    processingLabel.setText("Done!");
+                    frame.toFront();
                 } catch (Exception ex) {
                     JOptionPane.showMessageDialog(frame, "Simulation terminated! Catching exception:\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
                             "Exception", JOptionPane.ERROR_MESSAGE);

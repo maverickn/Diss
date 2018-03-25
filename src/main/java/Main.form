@@ -59,7 +59,7 @@
         </constraints>
         <properties>
           <model/>
-          <toolTipText value="Select algorithm"/>
+          <toolTipText value="Select policy"/>
         </properties>
       </component>
       <component id="c3b8c" class="javax.swing.JButton" binding="runButton" default-binding="true">

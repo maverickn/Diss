@@ -1,9 +1,7 @@
 import org.cloudbus.cloudsim.*;
 import org.cloudbus.cloudsim.core.CloudSim;
 import org.cloudbus.cloudsim.power.*;
-import policy.HostPowerModeSelectionPolicyAgent;
-import policy.VmAllocationPolicyLocalRegression;
-import policy.VmAllocationPolicyNonPowerAware;
+import policy.*;
 
 import java.io.*;
 import java.io.File;
@@ -23,21 +21,29 @@ public class Runner {
     public Runner(String inputFolder, String outputFolder, String experimentName, String policyName) throws Exception {
         initLogOutput(outputFolder, experimentName, policyName);
         init(inputFolder + "/" + experimentName);
-        VmAllocationPolicy vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower,
-                new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
-
-        /*VmAllocationPolicy vap = new VmAllocationPolicyLocalRegression(hostList,
-                new PowerVmSelectionPolicyMinimumMigrationTime(),
-                1.2,
-                ParseConfig.schedulingInterval,
-                new PowerVmAllocationPolicyMigrationStaticThreshold(
-                        hostList,
-                        new PowerVmSelectionPolicyMinimumMigrationTime(),
-                        0.7));*/
-        start(experimentName, outputFolder, vap, policyName);
+        VmAllocationPolicy vap;
+        switch (policyName) {
+            case "Q-learning agent":
+                vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower,
+                        new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
+                policyName += " lr " + ParseConfig.learningRate + " df " + ParseConfig.discountFactor + " cs " + ParseConfig.cofImportanceSla + " cp " + ParseConfig.cofImportancePower;
+                start(experimentName, outputFolder, vap, policyName);
+                break;
+            case "Non power aware":
+                nonPowerAwareModelling(inputFolder, outputFolder, experimentName, policyName);
+                break;
+            case "Dvfs":
+                vap = new VmAllocationPolicyNonPowerAware(hostList);
+                start(experimentName, outputFolder, vap, policyName);
+                break;
+            default:
+                vap = getVmAllocationPolicy(policyName.split(" ")[0], policyName.split(" ")[1]);
+                start(experimentName, outputFolder, vap, policyName);
+                break;
+        }
     }
 
-    public static void initLogOutput(String outputFolder, String experimentName, String policyName) throws IOException {
+    private void initLogOutput(String outputFolder, String experimentName, String policyName) throws IOException {
         Log.enable();
         File folder = new File(outputFolder);
         if (!folder.exists()) {
@@ -52,7 +58,7 @@ public class Runner {
         Log.setOutput(new FileOutputStream(file));
     }
 
-    public static void printResults(String outputFolder, String experimentName, String policyName) throws IOException {
+    private void printResults(String outputFolder, String experimentName, String policyName) throws IOException {
         File folder = new File(outputFolder);
         if (!folder.exists()) {
             folder.mkdir();
@@ -101,8 +107,8 @@ public class Runner {
         Log.printLine("Finished " + experimentName);
     }
 
-    public static void nonPowerAwareModelling(String inputFolder, String outputFolder, String experimentName, String policyName) throws Exception {
-        Runner.initLogOutput(outputFolder, experimentName, policyName);
+    private void nonPowerAwareModelling(String inputFolder, String outputFolder, String experimentName, String policyName) throws Exception {
+        initLogOutput(outputFolder, experimentName, policyName);
         Log.printLine("Starting " + experimentName);
 
         CloudSim.init(1, Calendar.getInstance(), false);
@@ -133,6 +139,55 @@ public class Runner {
         printResults(outputFolder, experimentName, policyName);
 
         Log.printLine("Finished " + experimentName);
+    }
+
+    private VmAllocationPolicy getVmAllocationPolicy(String vmAllocationPolicyName, String vmSelectionPolicyName) {
+        VmAllocationPolicy vmAllocationPolicy = null;
+        PowerVmSelectionPolicy vmSelectionPolicy = getVmSelectionPolicy(vmSelectionPolicyName);
+        PowerVmAllocationPolicyMigrationAbstract fallbackVmSelectionPolicy =
+                new PowerVmAllocationPolicyMigrationStaticThreshold(hostList, vmSelectionPolicy, 0.7);
+        switch (vmAllocationPolicyName) {
+            case "Iqr":
+                vmAllocationPolicy =
+                        new VmAllocationPolicyInterQuartileRange(hostList, vmSelectionPolicy, 1.5, fallbackVmSelectionPolicy);
+                break;
+            case "Mad":
+                vmAllocationPolicy =
+                        new VmAllocationPolicyMedianAbsoluteDeviation(hostList, vmSelectionPolicy, 2.5, fallbackVmSelectionPolicy);
+                break;
+            case "Lr":
+                vmAllocationPolicy =
+                        new VmAllocationPolicyLocalRegression(hostList, vmSelectionPolicy, 1.2, ParseConfig.schedulingInterval, fallbackVmSelectionPolicy);
+                break;
+            case "Lrr":
+                vmAllocationPolicy =
+                        new VmAllocationPolicyLocalRegressionRobust(hostList, vmSelectionPolicy, 1.2, ParseConfig.schedulingInterval, fallbackVmSelectionPolicy);
+                break;
+            case "Thr":
+                vmAllocationPolicy =
+                        new VmAllocationPolicyStaticThreshold(hostList, vmSelectionPolicy, 0.8);
+                break;
+        }
+        return vmAllocationPolicy;
+    }
+
+    private PowerVmSelectionPolicy getVmSelectionPolicy(String vmSelectionPolicyName) {
+        PowerVmSelectionPolicy vmSelectionPolicy = null;
+        switch (vmSelectionPolicyName) {
+            case "Mc":
+                vmSelectionPolicy = new PowerVmSelectionPolicyMaximumCorrelation(new PowerVmSelectionPolicyMinimumMigrationTime());
+                break;
+            case "Mmt":
+                vmSelectionPolicy = new PowerVmSelectionPolicyMinimumMigrationTime();
+                break;
+            case "Mu":
+                vmSelectionPolicy = new PowerVmSelectionPolicyMinimumUtilization();
+                break;
+            case "Rs":
+                vmSelectionPolicy = new PowerVmSelectionPolicyRandomSelection();
+                break;
+        }
+        return vmSelectionPolicy;
     }
 
 }

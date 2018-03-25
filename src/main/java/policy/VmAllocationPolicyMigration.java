@@ -120,14 +120,14 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
             saveAllocation();
 
             ExecutionTimeMeasurer.start("optimizeAllocationVmSelection");
-            List<? extends Vm> vmsToMigrate = getAllVmsToMigrateFromHost(hostToChangePowerMode);
+            List<? extends Vm> vmsToMigrate = getVmsToMigrateFromUnderUtilizedHost(hostToChangePowerMode);
             getExecutionTimeHistoryVmSelection().add(ExecutionTimeMeasurer.end("optimizeAllocationVmSelection"));
 
             hibernateHosts.add(hostToChangePowerMode);
 
             Log.printLine("Reallocation of VMs from the powered off host:");
             ExecutionTimeMeasurer.start("optimizeAllocationVmReallocation");
-            List<Map<String, Object>> migrationMap = getNewVmPlacement(vmsToMigrate, new HashSet<Host>(hibernateHosts));
+            List<Map<String, Object>> migrationMap = getNewVmPlacementFromUnderUtilizedHost(vmsToMigrate, new HashSet<Host>(hibernateHosts));
             getExecutionTimeHistoryVmReallocation().add(ExecutionTimeMeasurer.end("optimizeAllocationVmReallocation"));
             Log.printLine();
 
@@ -305,14 +305,14 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
         return migrationMap;
     }
 
-    /*
+    /**
      * Gets the new vm placement from under utilized host.
      *
      * @param vmsToMigrate the list of VMs to migrate
      * @param excludedHosts the list of hosts that aren't selected as destination hosts
      * @return the new vm placement from under utilized host
      */
-    /*protected List<Map<String, Object>> getNewVmPlacementFromUnderUtilizedHost(
+    protected List<Map<String, Object>> getNewVmPlacementFromUnderUtilizedHost(
             List<? extends Vm> vmsToMigrate,
             Set<? extends Host> excludedHosts) {
         List<Map<String, Object>> migrationMap = new LinkedList<Map<String, Object>>();
@@ -337,7 +337,7 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
             }
         }
         return migrationMap;
-    }*/
+    }
 
     /**
      * Gets the VMs to migrate from hosts.
@@ -363,26 +363,26 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
         return vmsToMigrate;
     }
 
-    /**
+    /*
      * Gets all VMs to migrate from hosts.
      *
      * @param host target host
      * @return the VMs to migrate from hosts
      */
-    protected List<? extends Vm> getAllVmsToMigrateFromHost(PowerHostUtilizationHistory host) {
+    /*protected List<? extends Vm> getAllVmsToMigrateFromHost(PowerHostUtilizationHistory host) {
         List<Vm> vmsToMigrate = new LinkedList<>();
         vmsToMigrate.addAll(host.getVmList());
         host.vmDestroyAll();
         return vmsToMigrate;
-    }
+    }*/
 
-    /*
+    /**
      * Gets the VMs to migrate from under utilized host.
      *
      * @param host the host
      * @return the vms to migrate from under utilized host
      */
-    /*protected List<? extends Vm> getVmsToMigrateFromUnderUtilizedHost(PowerHost host) {
+    protected List<? extends Vm> getVmsToMigrateFromUnderUtilizedHost(PowerHost host) {
         List<Vm> vmsToMigrate = new LinkedList<Vm>();
         for (Vm vm : host.getVmList()) {
             if (!vm.isInMigration()) {
@@ -390,7 +390,7 @@ public abstract class VmAllocationPolicyMigration extends PowerVmAllocationPolic
             }
         }
         return vmsToMigrate;
-    }*/
+    }
 
     /**
      * Gets the over utilized hosts.
