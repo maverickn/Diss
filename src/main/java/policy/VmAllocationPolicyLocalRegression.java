@@ -15,11 +15,14 @@ public class VmAllocationPolicyLocalRegression extends PowerVmAllocationPolicyMi
         super(hostList, vmSelectionPolicy, safetyParameter, schedulingInterval, fallbackVmAllocationPolicy);
     }
 
-    @Override
-    public boolean isHostOverUtilized(PowerHost host) {
+    protected boolean isHostOverUtilized(PowerHost host) {
         HostPowerModeSelectionPolicyAgent.getTimeList().add(CloudSim.clock());
         HostPowerModeSelectionPolicyAgent.getSlaViolationTime(getHostList());
         HostPowerModeSelectionPolicyAgent.getTotalPowerAndMigrationCount(getHostList());
+        return super.isHostOverUtilized(host);
+    }
+
+    public boolean isHostOverUtil(PowerHost host) {
         return super.isHostOverUtilized(host);
     }
 }

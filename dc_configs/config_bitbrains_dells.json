@@ -1,0 +1,38 @@
+{
+  "__comment": "matisse.net/bitcalc/",
+  "outputFolder": "output",
+  "inputFolder": "D:\\Projects\\Diss\\workload\\bitbrains",
+  "experimentName": "trace_rnd_8",
+
+  "_schedulingInterval_comment": "12 seconds",
+  "schedulingInterval": 10,
+  "_simulationLimit_comment": "24 hours",
+  "simulationLimit": 86000,
+
+  "learningRate": 0.5,
+  "discountFactor": 0.5,
+  "cofImportanceSla": 0.5,
+  "cofImportancePower": 0.5,
+
+  "vmTypesCount": 4,
+  "vmMips": [2500, 2000, 1000, 500],
+  "vmPes": [1, 1, 1, 1],
+  "_vmRam_comment": "MB",
+  "vmRam": [870, 1740, 1740, 650],
+  "_vmBw_comment": "Kbit 100 Mbit (kilobyte = 1000 bytes)",
+  "vmBw": 100000,
+  "_vmSize_comment": "MB 2.5 GB (kilobyte = 1000 bytes)",
+  "vmSize": 2500,
+
+  "hostTypesCount": 4,
+  "hostTypes": ["DellPowerEdgeR640", "DellPowerEdgeR740", "DellPowerEdgeR830", "DellPowerEdgeR940"],
+  "hostMips": [2500, 2500, 2200, 2500],
+  "hostPes": [56, 56, 88, 112],
+  "_hostRam_comment": "MB",
+  "hostRam": [196608, 196608, 262144, 393216],
+  "_hostBw_comment": "Kbit/s 10 Gbit/s (kilobyte = 1000 bytes)",
+  "hostBw": 10000000,
+  "_hostStorage_comment": "MB, 1 TB (kilobyte = 1000 bytes)",
+  "hostStorage": 8000000,
+  "hostsCount": 6
+}

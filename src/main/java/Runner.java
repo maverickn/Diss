@@ -24,8 +24,11 @@ public class Runner {
         VmAllocationPolicy vap;
         switch (policyName) {
             case "Q-learning agent":
-                vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower,
-                        new PowerVmSelectionPolicyMinimumMigrationTime(), hostList);
+                PowerVmSelectionPolicy pvsp = new PowerVmSelectionPolicyMinimumMigrationTime();
+                PowerVmAllocationPolicyMigrationAbstract fbvsp = new PowerVmAllocationPolicyMigrationStaticThreshold(hostList, pvsp, 0.7);
+                VmAllocationPolicyLocalRegression  vaplr = new VmAllocationPolicyLocalRegression(hostList, pvsp, 1.2, ParseConfig.schedulingInterval, fbvsp);
+
+                vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower, pvsp, vaplr, hostList);
                 policyName += " lr " + ParseConfig.learningRate + " df " + ParseConfig.discountFactor + " cs " + ParseConfig.cofImportanceSla + " cp " + ParseConfig.cofImportancePower;
                 start(experimentName, outputFolder, vap, policyName);
                 break;

@@ -84,8 +84,8 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * @param hostList the host list
      */
     public HostPowerModeSelectionPolicyAgent(double learningRate, double discountFactor, double cofImportanceSla, double cofImportancePower,
-                                             PowerVmSelectionPolicy vmSelectionPolicy, List<? extends Host> hostList) {
-        super(hostList, vmSelectionPolicy);
+                                             PowerVmSelectionPolicy vmSelectionPolicy, VmAllocationPolicyLocalRegression vmAllocationPolicy, List<? extends Host> hostList) {
+        super(hostList, vmSelectionPolicy, vmAllocationPolicy);
         setLearningRate(learningRate);
         setDiscountFactor(discountFactor);
         setCofImportanceSla(cofImportanceSla);

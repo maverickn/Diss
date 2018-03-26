@@ -1,0 +1,38 @@
+{
+  "__comment": "matisse.net/bitcalc/",
+  "outputFolder": "output",
+  "inputFolder": "",
+  "experimentName": "",
+
+  "_schedulingInterval_comment": "seconds",
+  "schedulingInterval": ,
+  "_simulationLimit_comment": "",
+  "simulationLimit": ,
+
+  "learningRate": ,
+  "discountFactor": ,
+  "cofImportanceSla": ,
+  "cofImportancePower": ,
+
+  "vmTypesCount": 4,
+  "vmMips": [, , , ],
+  "vmPes": [, , , ],
+  "_vmRam_comment": "MB",
+  "vmRam": [, , , ],
+  "_vmBw_comment": "Kbit (kilobyte = 1000 bytes)",
+  "vmBw": ,
+  "_vmSize_comment": "MB (kilobyte = 1000 bytes)",
+  "vmSize": ,
+
+  "hostTypesCount": 3,
+  "hostTypes": ["", "", ""],
+  "hostMips": [, , ],
+  "hostPes": [, , ],
+  "_hostRam_comment": "MB",
+  "hostRam": [, , ],
+  "_hostBw_comment": "Kbit/s (kilobyte = 1000 bytes)",
+  "hostBw": ,
+  "_hostStorage_comment": "MB, (kilobyte = 1000 bytes)",
+  "hostStorage": ,
+  "hostsCount":
+}

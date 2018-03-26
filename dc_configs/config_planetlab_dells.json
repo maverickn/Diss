@@ -1,13 +1,13 @@
 {
   "__comment": "matisse.net/bitcalc/",
   "outputFolder": "output",
-  "inputFolder": "F:\\Diss\\Projects\\Diss\\workload\\bitbrains",
-  "experimentName": "trace_rnd_8",
+  "inputFolder": "D:\\Projects\\Diss\\workload\\planetlab",
+  "experimentName": "trace_1",
 
-  "_schedulingInterval_comment": "12 seconds",
-  "schedulingInterval": 10,
+  "_schedulingInterval_comment": "5 minutes",
+  "schedulingInterval": 300,
   "_simulationLimit_comment": "24 hours",
-  "simulationLimit": 86000,
+  "simulationLimit": 86400,
 
   "learningRate": 0.5,
   "discountFactor": 0.5,
@@ -34,5 +34,5 @@
   "hostBw": 10000000,
   "_hostStorage_comment": "MB, 1 TB (kilobyte = 1000 bytes)",
   "hostStorage": 8000000,
-  "hostsCount": 6
+  "hostsCount": 11
 }

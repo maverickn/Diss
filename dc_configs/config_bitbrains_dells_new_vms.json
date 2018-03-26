@@ -1,13 +1,13 @@
 {
   "__comment": "matisse.net/bitcalc/",
   "outputFolder": "output",
-  "inputFolder": "F:\\Diss\\Projects\\Diss\\workload\\planetlab",
-  "experimentName": "trace_1",
+  "inputFolder": "D:\\Projects\\Diss\\workload\\bitbrains",
+  "experimentName": "trace_rnd_8",
 
   "_schedulingInterval_comment": "5 minutes",
   "schedulingInterval": 300,
-  "_simulationLimit_comment": "24 hours",
-  "simulationLimit": 86400,
+  "_simulationLimit_comment": "1 month",
+  "simulationLimit": 2505600,
 
   "learningRate": 0.5,
   "discountFactor": 0.5,
@@ -15,14 +15,14 @@
   "cofImportancePower": 0.5,
 
   "vmTypesCount": 4,
-  "vmMips": [2500, 2000, 1000, 500],
-  "vmPes": [1, 1, 1, 1],
+  "vmMips": [500, 1300, 2200, 2200],
+  "vmPes": [2, 4, 8, 16],
   "_vmRam_comment": "MB",
-  "vmRam": [870, 1740, 1740, 650],
+  "vmRam": [2048, 4096, 8192, 16384],
   "_vmBw_comment": "Kbit 100 Mbit (kilobyte = 1000 bytes)",
   "vmBw": 100000,
-  "_vmSize_comment": "MB 2.5 GB (kilobyte = 1000 bytes)",
-  "vmSize": 2500,
+  "_vmSize_comment": "MB 20 GB (kilobyte = 1000 bytes)",
+  "vmSize": 20000,
 
   "hostTypesCount": 4,
   "hostTypes": ["DellPowerEdgeR640", "DellPowerEdgeR740", "DellPowerEdgeR830", "DellPowerEdgeR940"],
@@ -34,5 +34,5 @@
   "hostBw": 10000000,
   "_hostStorage_comment": "MB, 1 TB (kilobyte = 1000 bytes)",
   "hostStorage": 8000000,
-  "hostsCount": 11
+  "hostsCount": 300
 }
