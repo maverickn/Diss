@@ -18,8 +18,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
@@ -91,6 +91,28 @@ public class Main {
         migrationPanel.add(migrationChartPanel);
         migrationChartPanel.setDomainZoomable(true);
 
+        frame.addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {}
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if ((e.getKeyCode() == KeyEvent.VK_P) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
+                    resetCharts();
+                    try {
+                        plotSavedDatasets();
+                    } catch (IOException ex) {
+                        JOptionPane.showMessageDialog(frame, "File not found.\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
+                                "File not found", JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {}
+        });
+
+        frame.setFocusable(true);
         frame.setVisible(true);
 
         selectConfigButton.addActionListener(new ActionListener() {
@@ -144,7 +166,11 @@ public class Main {
                     if (policyName.equals("Q-learning agent")) {
                         policyName += " lr " + ParseConfig.learningRate + " df " + ParseConfig.discountFactor + " cs " + ParseConfig.cofImportanceSla + " cp " + ParseConfig.cofImportancePower;
                     }
-                    plotCharts(policyName);
+                    List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
+                    List<Double> slaList = HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList();
+                    List<Double> powerList = HostPowerModeSelectionPolicyAgent.getPowerConsumptionList();
+                    List<Double> migrationCountList = HostPowerModeSelectionPolicyAgent.getMigrationCountList();
+                    plotCharts(policyName, timeList, slaList, powerList, migrationCountList);
                     processingLabel.setText("Done!");
                     frame.toFront();
                 } catch (Exception ex) {
@@ -189,19 +215,54 @@ public class Main {
         return dataset;
     }
 
-    private void plotCharts(String chartName) {
-        List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
+    private void plotSavedDatasets() throws IOException {
+        File metricsFolder = new File("output/metrics");
+        File[] files = metricsFolder.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            String metricFile = files[i].getAbsolutePath();
+            String chartName = files[i].getName().split("_")[0];
+            List<Double> timeList = new ArrayList<>();
+            List<Double> slaList = new ArrayList<>();
+            List<Double> powerList = new ArrayList<>();
+            List<Double> migrationList = new ArrayList<>();
+            BufferedReader input = new BufferedReader(new FileReader(metricFile));
+            String line;
+            while ((line = input.readLine()) != null) {
+                line = line.replace(",",".");
+                String[] elements = line.split(";\t");
+                timeList.add(Double.valueOf(elements[0]));
+                slaList.add(Double.valueOf(elements[1]));
+                powerList.add(Double.valueOf(elements[2]));
+                migrationList.add(Double.valueOf(elements[3]));
+            }
+            plotCharts(chartName, timeList, slaList, powerList, migrationList);
+            input.close();
+        }
+    }
 
+    private void resetCharts() {
+        for (int i = 0; i < datasetSlaIndex; i++) {
+            slaPlot.setDataset(i, null);
+            slaPlot.setRenderer(i, null);
+            powerPlot.setDataset(i, null);
+            powerPlot.setRenderer(i, null);
+            migrationPlot.setDataset(i, null);
+            migrationPlot.setRenderer(i, null);
+        }
+        datasetSlaIndex = 0;
+        datasetPowerIndex = 0;
+        datasetMigrationIndex = 0;
+    }
+
+    private void plotCharts(String chartName, List<Double> timeList, List<Double> slaList, List<Double> powerList, List<Double> migrationCountList) {
         datasetSlaIndex++;
-        slaPlot.setDataset(datasetSlaIndex, createDataset(timeList, HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList(), chartName));
+        slaPlot.setDataset(datasetSlaIndex, createDataset(timeList, slaList, chartName));
         slaPlot.setRenderer(datasetSlaIndex, new StandardXYItemRenderer());
-
         datasetPowerIndex++;
-        powerPlot.setDataset(datasetPowerIndex, createDataset(timeList, HostPowerModeSelectionPolicyAgent.getPowerConsumptionList(), chartName));
+        powerPlot.setDataset(datasetPowerIndex, createDataset(timeList, powerList, chartName));
         powerPlot.setRenderer(datasetPowerIndex, new StandardXYItemRenderer());
-
         datasetMigrationIndex++;
-        migrationPlot.setDataset(datasetMigrationIndex, createDataset(timeList, HostPowerModeSelectionPolicyAgent.getMigrationCountList(), chartName));
+        migrationPlot.setDataset(datasetMigrationIndex, createDataset(timeList, migrationCountList, chartName));
         migrationPlot.setRenderer(datasetMigrationIndex, new StandardXYItemRenderer());
     }
 
