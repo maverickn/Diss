@@ -98,11 +98,12 @@ public class Main {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if ((e.getKeyCode() == KeyEvent.VK_P) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
-                    if (plotSavedButton.getBounds() == null) {
-                        plotSavedButton.setBounds(10, 170, 150, 30);
+                if (((e.getModifiers() & KeyEvent.CTRL_MASK) != 0) && ((e.getModifiers() & KeyEvent.SHIFT_MASK) != 0)
+                        && ((e.getModifiers() & KeyEvent.ALT_MASK) != 0) && e.getKeyCode() == KeyEvent.VK_1) {
+                    if (plotSavedButton.isVisible()) {
+                        plotSavedButton.setVisible(false);
                     } else {
-                        plotSavedButton.setBounds(null);
+                        plotSavedButton.setVisible(true);
                     }
                 }
             }
@@ -144,17 +145,17 @@ public class Main {
                 try {
                     ParseConfig.getData(selectedFile.getAbsolutePath());
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(frame, "Config file not found.\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
+                    JOptionPane.showMessageDialog(frame, "Config file not found.\n" + getExceptionMessage(ex),
                             "Config file not found", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
                 } catch (ParseException ex) {
-                    JOptionPane.showMessageDialog(frame, "Catching exception while parsing a config file.\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
+                    JOptionPane.showMessageDialog(frame, "Catching exception while parsing a config file.\n" + getExceptionMessage(ex),
                             "Parse exception", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, "Catching exception:\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
+                    JOptionPane.showMessageDialog(frame, "Catching exception:\n" + getExceptionMessage(ex),
                             "Exception", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
@@ -173,7 +174,7 @@ public class Main {
                     processingLabel.setText("Done!");
                     frame.toFront();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, "Simulation terminated! Catching exception:\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
+                    JOptionPane.showMessageDialog(frame, "Simulation terminated! Catching exception:\n" + getExceptionMessage(ex),
                             "Exception", JOptionPane.ERROR_MESSAGE);
                     CloudSim.terminateSimulation();
                     processingLabel.setText("");
@@ -198,7 +199,7 @@ public class Main {
                 try {
                     plotSavedDatasets();
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(frame, "File not found.\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
+                    JOptionPane.showMessageDialog(frame, "File not found.\n" + getExceptionMessage(ex),
                             "File not found", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -296,8 +297,13 @@ public class Main {
 
     private void setUpButtons() {
         selectConfigButton.setBounds(10,10,150,30);
+        selectConfigButton.setFocusable(false);
         runButton.setBounds(10,110,150,30);
+        runButton.setFocusable(false);
         runButton.setEnabled(false);
+        plotSavedButton.setBounds(10, 170, 150, 30);
+        plotSavedButton.setFocusable(false);
+        plotSavedButton.setVisible(false);
     }
 
     private void setUpLabels() {
@@ -331,15 +337,13 @@ public class Main {
         comboBox.addItem("Thr Mmt");
         comboBox.addItem("Thr Mu");
         comboBox.addItem("Thr Rs");
+        comboBox.setFocusable(false);
     }
 
-    private String getStackTrace(StackTraceElement[] ste) {
-        String errMsg = null;
-        for (StackTraceElement s : ste) {
-            errMsg += s;
-            errMsg += "\n\t";
-        }
-        return errMsg;
+    private String getExceptionMessage(Exception e) {
+        StringWriter sw = new StringWriter();
+        e.printStackTrace(new PrintWriter(sw));
+        return sw.toString();
     }
 
     public static void main(String[] args) {
