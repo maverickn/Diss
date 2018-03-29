@@ -7,6 +7,7 @@ import java.io.*;
 import java.io.File;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class Runner {
 
@@ -80,7 +81,7 @@ public class Runner {
         file.createNewFile();
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         for (int i = 0; i < timeList.size(); i++) {
-            writer.write(String.format("%.6f;\t%.6f;\t%.6f;\t%.6f;\t\n", timeList.get(i), slaViolationTimeList.get(i), powerConsumptionList.get(i), migrationCountList.get(i)));
+            writer.write(String.format(Locale.US,"%.6f;\t%.6f;\t%.6f;\t%.6f;\t\n", timeList.get(i), slaViolationTimeList.get(i), powerConsumptionList.get(i), migrationCountList.get(i)));
         }
         writer.close();
     }

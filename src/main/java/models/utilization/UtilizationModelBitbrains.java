@@ -1,6 +1,7 @@
 package models.utilization;
 
 import org.cloudbus.cloudsim.UtilizationModel;
+import org.cloudbus.cloudsim.core.CloudSim;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -23,7 +24,12 @@ public class UtilizationModelBitbrains implements UtilizationModel {
         int n = data.length;
         for (int i = 0; i < n; i++) {
             String[] elements = line.split(";\t");
-            data[i] = Double.valueOf(elements[4]) / 100;
+            double value = Double.valueOf(elements[4]) / 100;
+            if (value > 1.0) {
+                data[i] = 1.0;
+            } else {
+                data[i] = value;
+            }
             line = input.readLine();
         }
         input.close();
@@ -32,7 +38,6 @@ public class UtilizationModelBitbrains implements UtilizationModel {
     public UtilizationModelBitbrains(String inputPath, double schedulingInterval, int dataSamples, int[] vmRam)
             throws NumberFormatException, IOException {
         setSchedulingInterval(schedulingInterval);
-        int maxRam = Arrays.stream(vmRam).max().getAsInt() * 1024;
         data = new double[dataSamples + 1];
         BufferedReader input = new BufferedReader(new FileReader(inputPath));
         input.readLine();
@@ -40,7 +45,12 @@ public class UtilizationModelBitbrains implements UtilizationModel {
         int n = data.length;
         for (int i = 0; i < n; i++) {
             String[] elements = line.split(";\t");
-            data[i] = Double.valueOf(elements[6]) / maxRam;
+            double value = Double.valueOf(elements[6]) / Double.valueOf(elements[5]);
+            if (value > 1.0) {
+                data[i] = 1.0;
+            } else {
+                data[i] = value;
+            }
             line = input.readLine();
         }
         input.close();
@@ -56,7 +66,12 @@ public class UtilizationModelBitbrains implements UtilizationModel {
         int n = data.length;
         for (int i = 0; i < n; i++) {
             String[] elements = line.split(";\t");
-            data[i] = Double.valueOf(elements[10]) * 8 / vmBw;
+            double value = Double.valueOf(elements[10]) * 8 / vmBw;
+            if (value > 1.0) {
+                data[i] = 1.0;
+            } else {
+                data[i] = value;
+            }
             line = input.readLine();
         }
         input.close();

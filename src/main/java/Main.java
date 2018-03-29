@@ -30,6 +30,7 @@ public class Main {
 
     private JButton selectConfigButton;
     private JButton runButton;
+    private JButton plotSavedButton;
 
     private JLabel fileNameLabel;
     private JLabel processingLabel;
@@ -98,12 +99,10 @@ public class Main {
             @Override
             public void keyPressed(KeyEvent e) {
                 if ((e.getKeyCode() == KeyEvent.VK_P) && ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0)) {
-                    resetCharts();
-                    try {
-                        plotSavedDatasets();
-                    } catch (IOException ex) {
-                        JOptionPane.showMessageDialog(frame, "File not found.\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
-                                "File not found", JOptionPane.ERROR_MESSAGE);
+                    if (plotSavedButton.getBounds() == null) {
+                        plotSavedButton.setBounds(10, 170, 150, 30);
+                    } else {
+                        plotSavedButton.setBounds(null);
                     }
                 }
             }
@@ -192,6 +191,19 @@ public class Main {
             }
         });
 
+        plotSavedButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetCharts();
+                try {
+                    plotSavedDatasets();
+                } catch (IOException ex) {
+                    JOptionPane.showMessageDialog(frame, "File not found.\n" + ex.getMessage() + "\n" + getStackTrace(ex.getStackTrace()),
+                            "File not found", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+
         comboBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -218,52 +230,58 @@ public class Main {
     private void plotSavedDatasets() throws IOException {
         File metricsFolder = new File("output/metrics");
         File[] files = metricsFolder.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            String metricFile = files[i].getAbsolutePath();
-            String chartName = files[i].getName().split("_")[0];
-            List<Double> timeList = new ArrayList<>();
-            List<Double> slaList = new ArrayList<>();
-            List<Double> powerList = new ArrayList<>();
-            List<Double> migrationList = new ArrayList<>();
-            BufferedReader input = new BufferedReader(new FileReader(metricFile));
-            String line;
-            while ((line = input.readLine()) != null) {
-                line = line.replace(",",".");
-                String[] elements = line.split(";\t");
-                timeList.add(Double.valueOf(elements[0]));
-                slaList.add(Double.valueOf(elements[1]));
-                powerList.add(Double.valueOf(elements[2]));
-                migrationList.add(Double.valueOf(elements[3]));
+        if (files != null) {
+            for (File file : files) {
+                String metricFile = file.getAbsolutePath();
+                String chartName = file.getName().split("_")[0];
+                List<Double> timeList = new ArrayList<>();
+                List<Double> slaList = new ArrayList<>();
+                List<Double> powerList = new ArrayList<>();
+                List<Double> migrationList = new ArrayList<>();
+                BufferedReader input = new BufferedReader(new FileReader(metricFile));
+                String line;
+                while ((line = input.readLine()) != null) {
+                    line = line.replace(",", ".");
+                    String[] elements = line.split(";\t");
+                    timeList.add(Double.valueOf(elements[0]));
+                    slaList.add(Double.valueOf(elements[1]));
+                    powerList.add(Double.valueOf(elements[2]));
+                    migrationList.add(Double.valueOf(elements[3]));
+                }
+                plotCharts(chartName, timeList, slaList, powerList, migrationList);
+                input.close();
             }
-            plotCharts(chartName, timeList, slaList, powerList, migrationList);
-            input.close();
         }
     }
 
     private void resetCharts() {
-        for (int i = 0; i < datasetSlaIndex; i++) {
+        int indexCap = datasetSlaIndex;
+        for (int i = indexCap; i >= 0; i--) {
             slaPlot.setDataset(i, null);
             slaPlot.setRenderer(i, null);
             powerPlot.setDataset(i, null);
             powerPlot.setRenderer(i, null);
             migrationPlot.setDataset(i, null);
             migrationPlot.setRenderer(i, null);
+            datasetSlaIndex --;
+            datasetPowerIndex --;
+            datasetMigrationIndex --;
         }
-        datasetSlaIndex = 0;
-        datasetPowerIndex = 0;
-        datasetMigrationIndex = 0;
     }
 
     private void plotCharts(String chartName, List<Double> timeList, List<Double> slaList, List<Double> powerList, List<Double> migrationCountList) {
         datasetSlaIndex++;
         slaPlot.setDataset(datasetSlaIndex, createDataset(timeList, slaList, chartName));
         slaPlot.setRenderer(datasetSlaIndex, new StandardXYItemRenderer());
+        slaPlot.getRenderer().setSeriesStroke(datasetSlaIndex, new BasicStroke(1));
         datasetPowerIndex++;
         powerPlot.setDataset(datasetPowerIndex, createDataset(timeList, powerList, chartName));
         powerPlot.setRenderer(datasetPowerIndex, new StandardXYItemRenderer());
+        powerPlot.getRenderer().setSeriesStroke(datasetPowerIndex, new BasicStroke(1));
         datasetMigrationIndex++;
         migrationPlot.setDataset(datasetMigrationIndex, createDataset(timeList, migrationCountList, chartName));
         migrationPlot.setRenderer(datasetMigrationIndex, new StandardXYItemRenderer());
+        migrationPlot.getRenderer().setSeriesStroke(datasetMigrationIndex, new BasicStroke(1));
     }
 
     private void setUpPanels() {
