@@ -85,10 +85,6 @@ public class UtilizationModelBitbrains implements UtilizationModel {
         return schedulingInterval;
     }
 
-    public double[] getData(){
-        return data;
-    }
-
     @Override
     public double getUtilization(double time) {
         if (time % getSchedulingInterval() == 0) {

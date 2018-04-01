@@ -1,10 +1,10 @@
 {
   "__comment": "matisse.net/bitcalc/",
   "outputFolder": "output",
-  "inputFolder": "D:\\Projects\\Diss\\workload\\planetlab",
+  "inputFolder": "F:\\Diss\\Projects\\Diss\\workload\\planetlab",
   "experimentName": "trace_1",
 
-  "_schedulingInterval_comment": "5 minutes",
+  "_schedulingInterval_comment": "seconds",
   "schedulingInterval": 300,
   "_simulationLimit_comment": "24 hours",
   "simulationLimit": 86400,
@@ -19,7 +19,7 @@
   "vmPes": [1, 1, 1, 1],
   "_vmRam_comment": "MB",
   "vmRam": [870, 1740, 1740, 650],
-  "_vmBw_comment": "Kbit 100 Mbit (kilobyte = 1000 bytes)",
+  "_vmBw_comment": "Kbit/s 100 Mbit (kilobyte = 1000 bytes)",
   "vmBw": 100000,
   "_vmSize_comment": "MB 2.5 GB (kilobyte = 1000 bytes)",
   "vmSize": 2500,

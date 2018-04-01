@@ -21,26 +21,28 @@ public class Runner {
 
     public Runner(String inputFolder, String outputFolder, String experimentName, String policyName) throws Exception {
         initLogOutput(outputFolder, experimentName, policyName);
-        init(inputFolder + "/" + experimentName);
         VmAllocationPolicy vap;
         switch (policyName) {
-            case "Q-learning agent":
+            case "Qla":
+                init(inputFolder + "/" + experimentName, true);
                 PowerVmSelectionPolicy pvsp = new PowerVmSelectionPolicyMinimumMigrationTime();
                 PowerVmAllocationPolicyMigrationAbstract fbvsp = new PowerVmAllocationPolicyMigrationStaticThreshold(hostList, pvsp, 0.7);
                 VmAllocationPolicyLocalRegression  vaplr = new VmAllocationPolicyLocalRegression(hostList, pvsp, 1.2, ParseConfig.schedulingInterval, fbvsp);
 
                 vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower, pvsp, vaplr, hostList);
-                policyName += " lr " + ParseConfig.learningRate + " df " + ParseConfig.discountFactor + " cs " + ParseConfig.cofImportanceSla + " cp " + ParseConfig.cofImportancePower;
+                policyName += " lr=" + ParseConfig.learningRate + " df=" + ParseConfig.discountFactor + " cs=" + ParseConfig.cofImportanceSla + " cp=" + ParseConfig.cofImportancePower;
                 start(experimentName, outputFolder, vap, policyName);
                 break;
-            case "Non power aware":
-                nonPowerAwareModelling(inputFolder, outputFolder, experimentName, policyName);
+            case "Npa":
+                nonPowerAwareModelling(inputFolder, outputFolder, experimentName, policyName, true);
                 break;
             case "Dvfs":
+                init(inputFolder + "/" + experimentName, true);
                 vap = new VmAllocationPolicyNonPowerAware(hostList);
                 start(experimentName, outputFolder, vap, policyName);
                 break;
             default:
+                init(inputFolder + "/" + experimentName,false);
                 vap = getVmAllocationPolicy(policyName.split(" ")[0], policyName.split(" ")[1]);
                 start(experimentName, outputFolder, vap, policyName);
                 break;
@@ -86,11 +88,11 @@ public class Runner {
         writer.close();
     }
 
-    private void init(String experimentFolder) throws Exception {
+    private void init(String experimentFolder, boolean utilizationModel) throws Exception {
         CloudSim.init(1, Calendar.getInstance(), false);
         broker = SetupEntities.createBroker();
         int brokerId = broker.getId();
-        cloudletList = SetupEntities.createCloudletList(brokerId, experimentFolder);
+        cloudletList = SetupEntities.createCloudletList(brokerId, experimentFolder, utilizationModel);
         vmList = SetupEntities.createVmList(brokerId, cloudletList.size());
         hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
     }
@@ -111,7 +113,7 @@ public class Runner {
         Log.printLine("Finished " + experimentName);
     }
 
-    private void nonPowerAwareModelling(String inputFolder, String outputFolder, String experimentName, String policyName) throws Exception {
+    private void nonPowerAwareModelling(String inputFolder, String outputFolder, String experimentName, String policyName, boolean utilizationModel) throws Exception {
         initLogOutput(outputFolder, experimentName, policyName);
         Log.printLine("Starting " + experimentName);
 
@@ -120,7 +122,7 @@ public class Runner {
         DatacenterBroker broker = SetupEntities.createBroker();
         int brokerId = broker.getId();
 
-        List<Cloudlet> cloudletList = SetupEntities.createCloudletList(brokerId, inputFolder + "/" + experimentName);
+        List<Cloudlet> cloudletList = SetupEntities.createCloudletList(brokerId, inputFolder + "/" + experimentName, utilizationModel);
         List<Vm> vmList = SetupEntities.createVmList(brokerId, cloudletList.size());
         List<PowerHost> hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
 

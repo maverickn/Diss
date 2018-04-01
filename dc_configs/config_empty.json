@@ -19,7 +19,7 @@
   "vmPes": [, , , ],
   "_vmRam_comment": "MB",
   "vmRam": [, , , ],
-  "_vmBw_comment": "Kbit (kilobyte = 1000 bytes)",
+  "_vmBw_comment": "Kbit/s (kilobyte = 1000 bytes)",
   "vmBw": ,
   "_vmSize_comment": "MB (kilobyte = 1000 bytes)",
   "vmSize": ,
