@@ -21,6 +21,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Main {
     private JPanel mainPanel;
@@ -48,49 +49,16 @@ public class Main {
     private int datasetMigrationIndex = 0;
 
     public Main() {
-        JFrame frame = new JFrame("Diss");
+        JFrame frame = new JFrame("");
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setContentPane(mainPanel);
-        frame.setSize(1250, 1000);
+        frame.setSize(1250, 650);
         frame.setLocationRelativeTo(null);
 
         setUpPanels();
         setUpButtons();
         setUpLabels();
         setUpComboBox();
-
-        final JFreeChart slaChart = ChartFactory.createXYLineChart("SLA violation time","Time", "SLA Violation Time",
-                null, PlotOrientation.VERTICAL, true, true, false);
-        slaPlot = slaChart.getXYPlot();
-        final ValueAxis axis1 = slaPlot.getDomainAxis();
-        axis1.setAutoRange(true);
-        final NumberAxis rangeAxis1 = new NumberAxis("Range Axis 1");
-        rangeAxis1.setAutoRangeIncludesZero(false);
-        final ChartPanel slaChartPanel = new ChartPanel(slaChart);
-        slaPanel.add(slaChartPanel);
-        slaChartPanel.setDomainZoomable(true);
-
-        final JFreeChart powerChart = ChartFactory.createXYLineChart("Power consumption","Time", "Power consumption",
-                null, PlotOrientation.VERTICAL, true, true, false);
-        powerPlot = powerChart.getXYPlot();
-        final ValueAxis axis2 = powerPlot.getDomainAxis();
-        axis2.setAutoRange(true);
-        final NumberAxis rangeAxis2 = new NumberAxis("Range Axis 2");
-        rangeAxis2.setAutoRangeIncludesZero(false);
-        final ChartPanel powerChartPanel = new ChartPanel(powerChart);
-        powerPanel.add(powerChartPanel);
-        powerChartPanel.setDomainZoomable(true);
-
-        final JFreeChart migrationChart = ChartFactory.createXYLineChart("Migration count","Time", "Migration count",
-                null, PlotOrientation.VERTICAL, true, true, false);
-        migrationPlot = migrationChart.getXYPlot();
-        final ValueAxis axis3 = migrationPlot.getDomainAxis();
-        axis3.setAutoRange(true);
-        final NumberAxis rangeAxis3 = new NumberAxis("Range Axis 3");
-        rangeAxis3.setAutoRangeIncludesZero(false);
-        final ChartPanel migrationChartPanel = new ChartPanel(migrationChart);
-        migrationPanel.add(migrationChartPanel);
-        migrationChartPanel.setDomainZoomable(true);
+        setUpCharts();
 
         frame.addKeyListener(new KeyListener() {
             @Override
@@ -112,6 +80,8 @@ public class Main {
             public void keyReleased(KeyEvent e) {}
         });
 
+        JScrollPane scrollBar = new JScrollPane(mainPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        frame.add(scrollBar);
         frame.setFocusable(true);
         frame.setVisible(true);
 
@@ -162,9 +132,9 @@ public class Main {
                 }
                 try {
                     String policyName = comboBox.getSelectedItem().toString();
-                    new Runner(ParseConfig.inputFolder, ParseConfig.outputFolder, ParseConfig.experimentName, policyName);
-                    if (policyName.equals("Q-learning agent")) {
-                        policyName += " lr " + ParseConfig.learningRate + " df " + ParseConfig.discountFactor + " cs " + ParseConfig.cofImportanceSla + " cp " + ParseConfig.cofImportancePower;
+                    new Runner(ParseConfig.inputFolder, ParseConfig.experimentName, policyName);
+                    if (policyName.equals("Qla")) {
+                        policyName += " lr=" + ParseConfig.learningRate + " df=" + ParseConfig.discountFactor + " cs=" + ParseConfig.cofImportanceSla + " cp=" + ParseConfig.cofImportancePower;
                     }
                     List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
                     List<Double> slaList = HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList();
@@ -242,7 +212,6 @@ public class Main {
                 BufferedReader input = new BufferedReader(new FileReader(metricFile));
                 String line;
                 while ((line = input.readLine()) != null) {
-                    line = line.replace(",", ".");
                     String[] elements = line.split(";\t");
                     timeList.add(Double.valueOf(elements[0]));
                     slaList.add(Double.valueOf(elements[1]));
@@ -286,6 +255,7 @@ public class Main {
     }
 
     private void setUpPanels() {
+        mainPanel.setPreferredSize(new Dimension(1240,940));
         mainPanel.setLayout(null);
         slaPanel.setBounds(170,10,1050,290);
         slaPanel.setLayout(new BorderLayout());
@@ -314,8 +284,8 @@ public class Main {
     private void setUpComboBox() {
         comboBox.setBounds(10,70,150,30);
         comboBox.addItem(null);
-        comboBox.addItem("Q-learning agent");
-        comboBox.addItem("Non power aware");
+        comboBox.addItem("Qla");
+        comboBox.addItem("Npa");
         comboBox.addItem("Dvfs");
         comboBox.addItem("Iqr Mc");
         comboBox.addItem("Iqr Mmt");
@@ -338,6 +308,41 @@ public class Main {
         comboBox.addItem("Thr Mu");
         comboBox.addItem("Thr Rs");
         comboBox.setFocusable(false);
+    }
+
+    private void setUpCharts() {
+        final JFreeChart slaChart = ChartFactory.createXYLineChart("SLA violation time","Time, seconds", "SLA Violation Time, seconds",
+                null, PlotOrientation.VERTICAL, true, true, false);
+        slaPlot = slaChart.getXYPlot();
+        final ValueAxis axis1 = slaPlot.getDomainAxis();
+        axis1.setAutoRange(true);
+        final NumberAxis rangeAxis1 = new NumberAxis("Range Axis 1");
+        rangeAxis1.setAutoRangeIncludesZero(false);
+        final ChartPanel slaChartPanel = new ChartPanel(slaChart);
+        slaPanel.add(slaChartPanel);
+        slaChartPanel.setDomainZoomable(true);
+
+        final JFreeChart powerChart = ChartFactory.createXYLineChart("Power consumption","Time, seconds", "Power consumption, kWh",
+                null, PlotOrientation.VERTICAL, true, true, false);
+        powerPlot = powerChart.getXYPlot();
+        final ValueAxis axis2 = powerPlot.getDomainAxis();
+        axis2.setAutoRange(true);
+        final NumberAxis rangeAxis2 = new NumberAxis("Range Axis 2");
+        rangeAxis2.setAutoRangeIncludesZero(false);
+        final ChartPanel powerChartPanel = new ChartPanel(powerChart);
+        powerPanel.add(powerChartPanel);
+        powerChartPanel.setDomainZoomable(true);
+
+        final JFreeChart migrationChart = ChartFactory.createXYLineChart("Migration count","Time, seconds", "Migration count",
+                null, PlotOrientation.VERTICAL, true, true, false);
+        migrationPlot = migrationChart.getXYPlot();
+        final ValueAxis axis3 = migrationPlot.getDomainAxis();
+        axis3.setAutoRange(true);
+        final NumberAxis rangeAxis3 = new NumberAxis("Range Axis 3");
+        rangeAxis3.setAutoRangeIncludesZero(false);
+        final ChartPanel migrationChartPanel = new ChartPanel(migrationChart);
+        migrationPanel.add(migrationChartPanel);
+        migrationChartPanel.setDomainZoomable(true);
     }
 
     private String getExceptionMessage(Exception e) {

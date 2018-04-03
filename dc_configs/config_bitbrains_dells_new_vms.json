@@ -1,6 +1,5 @@
 {
   "__comment": "matisse.net/bitcalc/",
-  "outputFolder": "output",
   "inputFolder": "F:\\Diss\\Projects\\Diss\\workload\\bitbrains",
   "experimentName": "trace_rnd_8",
 
@@ -9,8 +8,8 @@
   "_simulationLimit_comment": "1 month",
   "simulationLimit": 2505600,
 
-  "learningRate": 0.5,
-  "discountFactor": 0.5,
+  "learningRate": 0.0,
+  "discountFactor": 0.0,
   "cofImportanceSla": 0.5,
   "cofImportancePower": 0.5,
 

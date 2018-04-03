@@ -1,5 +1,4 @@
 import models.power.*;
-import org.cloudbus.cloudsim.Log;
 import org.cloudbus.cloudsim.power.models.PowerModel;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -11,7 +10,6 @@ import java.io.IOException;
 
 public class ParseConfig {
 
-    public static String outputFolder;
     public static String inputFolder;
     public static String experimentName;
 
@@ -43,7 +41,6 @@ public class ParseConfig {
         Object obj = new JSONParser().parse(new FileReader(configName));
         JSONObject jo = (JSONObject) obj;
 
-        outputFolder = (String) jo.get("outputFolder");
         inputFolder = (String) jo.get("inputFolder");
         experimentName = (String) jo.get("experimentName");
 

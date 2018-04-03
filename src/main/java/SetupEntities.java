@@ -151,7 +151,7 @@ public class SetupEntities {
 		return timeBeforeVmMigration;
 	}*/
 
-	/*public static void printResults(PowerDatacenter datacenter, List<Vm> vms, double lastClock, String experimentName, String outputFolder) {
+	/*public static void printResults(PowerDatacenter datacenter, List<Vm> vms, double lastClock, String experimentName) {
 		List<Host> hosts = datacenter.getHostList();
 
 		int numberOfHosts = hosts.size();
@@ -233,23 +233,23 @@ public class SetupEntities {
 		}
 		Log.printLine();
 
-		File folder = new File(outputFolder);
+		File folder = new File("output");
 		if (!folder.exists()) {
 			folder.mkdir();
 		}
-		File folder1 = new File(outputFolder + "/stats");
+		File folder1 = new File("output/stats");
 		if (!folder1.exists()) {
 			folder1.mkdir();
 		}
-		File folder2 = new File(outputFolder + "/time_before_host_shutdown");
+		File folder2 = new File("output/time_before_host_shutdown");
 		if (!folder2.exists()) {
 			folder2.mkdir();
 		}
-		File folder3 = new File(outputFolder + "/time_before_vm_migration");
+		File folder3 = new File("output/time_before_vm_migration");
 		if (!folder3.exists()) {
 			folder3.mkdir();
 		}
-		File folder4 = new File(outputFolder + "/metrics");
+		File folder4 = new File("output/metrics");
 		if (!folder4.exists()) {
 			folder4.mkdir();
 		}
@@ -305,11 +305,11 @@ public class SetupEntities {
 			data.append(String.format("%.5f", executionTimeTotalMean) + delimeter);
 			data.append(String.format("%.5f", executionTimeTotalStDev) + delimeter);
 
-			writeMetricHistory(hosts, vmAllocationPolicy, outputFolder + "/metrics/" + experimentName + "_metric");
+			writeMetricHistory(hosts, vmAllocationPolicy, "output/metrics/" + experimentName + "_metric");
 		}
-		writeDataRow(data.toString(), outputFolder + "/stats/" + experimentName + "_stats.csv");
-		writeDataColumn(timeBeforeHostShutdown, outputFolder + "/time_before_host_shutdown/" + experimentName + "_time_before_host_shutdown.csv");
-		writeDataColumn(timeBeforeVmMigration, outputFolder + "/time_before_vm_migration/" + experimentName + "_time_before_vm_migration.csv");
+		writeDataRow(data.toString(), "output/stats/" + experimentName + "_stats.csv");
+		writeDataColumn(timeBeforeHostShutdown, "output/time_before_host_shutdown/" + experimentName + "_time_before_host_shutdown.csv");
+		writeDataColumn(timeBeforeVmMigration, "output/time_before_vm_migration/" + experimentName + "_time_before_vm_migration.csv");
 		//Log.setDisabled(true);
 	}*/
 

@@ -166,11 +166,11 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         int powerMode = getActionsList().get(actionIndex);
         System.out.println("powerMode: " + powerMode);
 
-        if (cnter == 4) {
+        /*if (cnter == 4) {
             CloudSim.terminateSimulation();
         } else {
             cnter ++;
-        }
+        }*/
 
         return new int[] {actionIndex, powerMode};
     }
@@ -275,7 +275,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
     }
 
     /**
-     * Gets datacenter power.
+     * Gets datacenter power and migration count.
      */
     public static void getTotalPowerAndMigrationCount(List<Host> hosts) {
         Host host = hosts.get(0);

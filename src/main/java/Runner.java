@@ -19,8 +19,8 @@ public class Runner {
 
     private List<PowerHost> hostList;
 
-    public Runner(String inputFolder, String outputFolder, String experimentName, String policyName) throws Exception {
-        initLogOutput(outputFolder, experimentName, policyName);
+    public Runner(String inputFolder, String experimentName, String policyName) throws Exception {
+        initLogOutput(experimentName, policyName);
         VmAllocationPolicy vap;
         switch (policyName) {
             case "Qla":
@@ -31,45 +31,45 @@ public class Runner {
 
                 vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower, pvsp, vaplr, hostList);
                 policyName += " lr=" + ParseConfig.learningRate + " df=" + ParseConfig.discountFactor + " cs=" + ParseConfig.cofImportanceSla + " cp=" + ParseConfig.cofImportancePower;
-                start(experimentName, outputFolder, vap, policyName);
+                start(experimentName, vap, policyName);
                 break;
             case "Npa":
-                nonPowerAwareModelling(inputFolder, outputFolder, experimentName, policyName, true);
+                nonPowerAwareModelling(inputFolder, experimentName, policyName, true);
                 break;
             case "Dvfs":
                 init(inputFolder + "/" + experimentName, true);
                 vap = new VmAllocationPolicyNonPowerAware(hostList);
-                start(experimentName, outputFolder, vap, policyName);
+                start(experimentName, vap, policyName);
                 break;
             default:
                 init(inputFolder + "/" + experimentName,false);
                 vap = getVmAllocationPolicy(policyName.split(" ")[0], policyName.split(" ")[1]);
-                start(experimentName, outputFolder, vap, policyName);
+                start(experimentName, vap, policyName);
                 break;
         }
     }
 
-    private void initLogOutput(String outputFolder, String experimentName, String policyName) throws IOException {
+    private void initLogOutput(String experimentName, String policyName) throws IOException {
         Log.enable();
-        File folder = new File(outputFolder);
+        File folder = new File("output");
         if (!folder.exists()) {
             folder.mkdir();
         }
-        File folder2 = new File(outputFolder + "/log");
+        File folder2 = new File("output/log");
         if (!folder2.exists()) {
             folder2.mkdir();
         }
-        File file = new File(outputFolder + "/log/" + policyName + "_" + experimentName + ".log");
+        File file = new File("output/log/" + policyName + "_" + experimentName + ".log");
         file.createNewFile();
         Log.setOutput(new FileOutputStream(file));
     }
 
-    private void printResults(String outputFolder, String experimentName, String policyName) throws IOException {
-        File folder = new File(outputFolder);
+    private void printResults(String experimentName, String policyName) throws IOException {
+        File folder = new File("output");
         if (!folder.exists()) {
             folder.mkdir();
         }
-        File folder1 = new File(outputFolder + "/metrics");
+        File folder1 = new File("output/metrics");
         if (!folder1.exists()) {
             folder1.mkdir();
         }
@@ -79,7 +79,7 @@ public class Runner {
         List<Double> powerConsumptionList = HostPowerModeSelectionPolicyAgent.getPowerConsumptionList();
         List<Double> migrationCountList = HostPowerModeSelectionPolicyAgent.getMigrationCountList();
 
-        File file = new File(outputFolder + "/metrics/" + policyName + "_" + experimentName + "_metric.csv");
+        File file = new File("output/metrics/" + policyName + "_" + experimentName + "_metric.csv");
         file.createNewFile();
         BufferedWriter writer = new BufferedWriter(new FileWriter(file));
         for (int i = 0; i < timeList.size(); i++) {
@@ -97,7 +97,7 @@ public class Runner {
         hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
     }
 
-    private void start(String experimentName, String outputFolder, VmAllocationPolicy vmAllocationPolicy, String policyName) throws Exception {
+    private void start(String experimentName, VmAllocationPolicy vmAllocationPolicy, String policyName) throws Exception {
         Log.printLine("Starting " + experimentName);
         PowerDatacenter datacenter = (PowerDatacenter) SetupEntities.createDatacenter("Datacenter",
                 PowerDatacenter.class, hostList, vmAllocationPolicy);
@@ -109,12 +109,12 @@ public class Runner {
         List<Cloudlet> newList = broker.getCloudletReceivedList();
         Log.printLine("Received " + newList.size() + " cloudlets");
         CloudSim.stopSimulation();
-        printResults(outputFolder, experimentName, policyName);
+        printResults(experimentName, policyName);
         Log.printLine("Finished " + experimentName);
     }
 
-    private void nonPowerAwareModelling(String inputFolder, String outputFolder, String experimentName, String policyName, boolean utilizationModel) throws Exception {
-        initLogOutput(outputFolder, experimentName, policyName);
+    private void nonPowerAwareModelling(String inputFolder, String experimentName, String policyName, boolean utilizationModel) throws Exception {
+        initLogOutput(experimentName, policyName);
         Log.printLine("Starting " + experimentName);
 
         CloudSim.init(1, Calendar.getInstance(), false);
@@ -142,7 +142,7 @@ public class Runner {
         Log.printLine("Received " + newList.size() + " cloudlets");
 
         CloudSim.stopSimulation();
-        printResults(outputFolder, experimentName, policyName);
+        printResults(experimentName, policyName);
 
         Log.printLine("Finished " + experimentName);
     }
