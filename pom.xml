@@ -35,7 +35,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>Main</mainClass>
+                            <mainClass>exp.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
@@ -53,24 +53,9 @@
             <version>3.6.1</version>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.17</version>
-        </dependency>
-        <dependency>
             <groupId>com.googlecode.json-simple</groupId>
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>flanagan</groupId>
-            <artifactId>flanagan</artifactId>
-            <version>1.0</version>
-        </dependency>
-        <dependency>
-            <groupId>cloudsim</groupId>
-            <artifactId>cloudsim</artifactId>
-            <version>4.0</version>
         </dependency>
         <dependency>
             <groupId>jfree</groupId>
