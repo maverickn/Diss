@@ -231,6 +231,14 @@ public class Vm {
 		return getCloudletScheduler().getTotalUtilizationOfCpu(time);
 	}
 
+	public double getTotalUtilizationOfRam(double time) {
+		return getCloudletScheduler().getTotalUtilizationOfRam(time);
+	}
+
+	public double getTotalUtilizationOfBw(double time) {
+		return getCloudletScheduler().getTotalUtilizationOfBw(time);
+	}
+
 	/**
 	 * Get total CPU utilization of all cloudlets running on this VM at the given time (in MIPS).
 	 * 

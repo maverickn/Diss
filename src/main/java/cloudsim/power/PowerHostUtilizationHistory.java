@@ -63,12 +63,34 @@ public class PowerHostUtilizationHistory extends PowerHost {
 	 * 
 	 * @return the host CPU utilization percentage history
 	 */
-	protected double[] getUtilizationHistory() {
+	protected double[] getUtilizationHistoryCpu() {
 		double[] utilizationHistory = new double[PowerVm.HISTORY_LENGTH];
 		double hostMips = getTotalMips();
 		for (PowerVm vm : this.<PowerVm> getVmList()) {
-			for (int i = 0; i < vm.getUtilizationHistory().size(); i++) {
-				utilizationHistory[i] += vm.getUtilizationHistory().get(i) * vm.getMips() / hostMips;
+			for (int i = 0; i < vm.getUtilizationHistoryCpu().size(); i++) {
+				utilizationHistory[i] += vm.getUtilizationHistoryCpu().get(i) * vm.getMips() / hostMips;
+			}
+		}
+		return MathUtil.trimZeroTail(utilizationHistory);
+	}
+
+	protected double[] getUtilizationHistoryRam() {
+		double[] utilizationHistory = new double[PowerVm.HISTORY_LENGTH];
+		double hostRam = getRam();
+		for (PowerVm vm : this.<PowerVm> getVmList()) {
+			for (int i = 0; i < vm.getUtilizationHistoryRam().size(); i++) {
+				utilizationHistory[i] += vm.getUtilizationHistoryRam().get(i) * vm.getRam() / hostRam;
+			}
+		}
+		return MathUtil.trimZeroTail(utilizationHistory);
+	}
+
+	protected double[] getUtilizationHistoryBw() {
+		double[] utilizationHistory = new double[PowerVm.HISTORY_LENGTH];
+		double hostBw = getBw();
+		for (PowerVm vm : this.<PowerVm> getVmList()) {
+			for (int i = 0; i < vm.getUtilizationHistoryBw().size(); i++) {
+				utilizationHistory[i] += vm.getUtilizationHistoryBw().get(i) * vm.getBw() / hostBw;
 			}
 		}
 		return MathUtil.trimZeroTail(utilizationHistory);

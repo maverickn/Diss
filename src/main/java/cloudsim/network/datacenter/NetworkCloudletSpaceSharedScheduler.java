@@ -526,6 +526,24 @@ public class NetworkCloudletSpaceSharedScheduler extends CloudletScheduler {
 	}
 
 	@Override
+	public double getTotalUtilizationOfRam(double time) {
+		double totalUtilization = 0;
+		for (ResCloudlet gl : getCloudletExecList()) {
+			totalUtilization += gl.getCloudlet().getUtilizationOfRam(time);
+		}
+		return totalUtilization;
+	}
+
+	@Override
+	public double getTotalUtilizationOfBw(double time) {
+		double totalUtilization = 0;
+		for (ResCloudlet gl : getCloudletExecList()) {
+			totalUtilization += gl.getCloudlet().getUtilizationOfBw(time);
+		}
+		return totalUtilization;
+	}
+
+	@Override
 	public boolean isFinishedCloudlets() {
 		return getCloudletFinishedList().size() > 0;
 	}

@@ -90,7 +90,7 @@ public class PowerVmSelectionPolicyMaximumCorrelation extends PowerVmSelectionPo
 		int m = getMinUtilizationHistorySize(vmList);
 		double[][] utilization = new double[n][m];
 		for (int i = 0; i < n; i++) {
-			List<Double> vmUtilization = vmList.get(i).getUtilizationHistory();
+			List<Double> vmUtilization = vmList.get(i).getUtilizationHistoryCpu();
 			for (int j = 0; j < vmUtilization.size(); j++) {
 				utilization[i][j] = vmUtilization.get(j);
 			}
@@ -107,7 +107,7 @@ public class PowerVmSelectionPolicyMaximumCorrelation extends PowerVmSelectionPo
 	protected int getMinUtilizationHistorySize(final List<PowerVm> vmList) {
 		int minSize = Integer.MAX_VALUE;
 		for (PowerVm vm : vmList) {
-			int size = vm.getUtilizationHistory().size();
+			int size = vm.getUtilizationHistoryCpu().size();
 			if (size < minSize) {
 				minSize = size;
 			}

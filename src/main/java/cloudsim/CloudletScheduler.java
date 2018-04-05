@@ -193,6 +193,10 @@ public abstract class CloudletScheduler {
 	 */
 	public abstract double getTotalUtilizationOfCpu(double time);
 
+	public abstract double getTotalUtilizationOfRam(double time);
+
+	public abstract double getTotalUtilizationOfBw(double time);
+
 	/**
 	 * Gets the current requested mips.
 	 * 

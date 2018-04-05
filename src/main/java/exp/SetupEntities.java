@@ -98,18 +98,10 @@ public class SetupEntities {
 		java.io.File inputFolder = new java.io.File(inputFolderName);
 		File[] files = inputFolder.listFiles();
 		for (int i = 0; i < files.length; i++) {
-			Cloudlet cloudlet;
-			if (utilizationModel) {
-				cloudlet = new Cloudlet(i, CLOUDLET_LENGTH, CLOUDLET_PES, fileSize, outputSize,
+			Cloudlet cloudlet = new Cloudlet(i, CLOUDLET_LENGTH, CLOUDLET_PES, fileSize, outputSize,
 						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval, dataSamples),
 						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval, dataSamples, ParseConfig.vmRam),
 						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval, dataSamples, ParseConfig.vmBw));
-			} else {
-				cloudlet = new Cloudlet(i, CLOUDLET_LENGTH, CLOUDLET_PES, fileSize, outputSize,
-						new UtilizationModelBitbrains(files[i].getAbsolutePath(), ParseConfig.schedulingInterval, dataSamples),
-						new UtilizationModelNull(),
-						new UtilizationModelNull());
-			}
 			cloudlet.setUserId(brokerId);
 			cloudlet.setVmId(i);
 			list.add(cloudlet);

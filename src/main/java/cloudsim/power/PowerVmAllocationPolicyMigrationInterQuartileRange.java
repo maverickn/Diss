@@ -123,7 +123,7 @@ public class PowerVmAllocationPolicyMigrationInterQuartileRange extends
 	 * @return the host CPU utilization percentage IQR
 	 */
 	protected double getHostUtilizationIqr(PowerHostUtilizationHistory host) throws IllegalArgumentException {
-		double[] data = host.getUtilizationHistory();
+		double[] data = host.getUtilizationHistoryCpu();
 		if (MathUtil.countNonZeroBeginning(data) >= 12) { // 12 has been suggested as a safe value
 			return MathUtil.iqr(data);
 		}

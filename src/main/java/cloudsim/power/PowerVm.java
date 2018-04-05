@@ -39,7 +39,11 @@ public class PowerVm extends Vm {
 	public static final int HISTORY_LENGTH = 30;
 
 	/** The CPU utilization percentage history. */
-	private final List<Double> utilizationHistory = new LinkedList<Double>();
+	private final List<Double> utilizationHistoryCpu = new LinkedList<Double>();
+
+	private final List<Double> utilizationHistoryRam = new LinkedList<Double>();
+
+	private final List<Double> utilizationHistoryBw = new LinkedList<Double>();
 
 	/** The previous time that cloudlets were processed. */
 	private double previousTime;
@@ -83,9 +87,17 @@ public class PowerVm extends Vm {
 	public double updateVmProcessing(final double currentTime, final List<Double> mipsShare) {
 		double time = super.updateVmProcessing(currentTime, mipsShare);
 		if (currentTime > getPreviousTime() && (currentTime - 0.1) % getSchedulingInterval() == 0) {
-			double utilization = getTotalUtilizationOfCpu(getCloudletScheduler().getPreviousTime());
-			if (CloudSim.clock() != 0 || utilization != 0) {
-				addUtilizationHistoryValue(utilization);
+			double utilizationCpu = getTotalUtilizationOfCpu(getCloudletScheduler().getPreviousTime());
+			if (CloudSim.clock() != 0 || utilizationCpu != 0) {
+				addUtilizationHistoryValueCpu(utilizationCpu);
+			}
+			double utilizationRam = getTotalUtilizationOfRam(getCloudletScheduler().getPreviousTime());
+			if (CloudSim.clock() != 0 || utilizationRam != 0) {
+				addUtilizationHistoryValueRam(utilizationRam);
+			}
+			double utilizationBw = getTotalUtilizationOfBw(getCloudletScheduler().getPreviousTime());
+			if (CloudSim.clock() != 0 || utilizationBw != 0) {
+				addUtilizationHistoryValueBw(utilizationBw);
 			}
 			setPreviousTime(currentTime);
 		}
@@ -93,21 +105,21 @@ public class PowerVm extends Vm {
 	}
 
 	/**
-	 * Gets the utilization MAD in MIPS.
+	 * Gets the utilization MAD.
 	 * 
-	 * @return the utilization MAD in MIPS
+	 * @return the utilization MAD
 	 */
-	public double getUtilizationMad() {
+	public double getUtilizationMad(List<Double> utilizationHistory) {
 		double mad = 0;
-		if (!getUtilizationHistory().isEmpty()) {
+		if (!utilizationHistory.isEmpty()) {
 			int n = HISTORY_LENGTH;
-			if (HISTORY_LENGTH > getUtilizationHistory().size()) {
-				n = getUtilizationHistory().size();
+			if (HISTORY_LENGTH > utilizationHistory.size()) {
+				n = utilizationHistory.size();
 			}
-			double median = MathUtil.median(getUtilizationHistory());
+			double median = MathUtil.median(utilizationHistory);
 			double[] deviationSum = new double[n];
 			for (int i = 0; i < n; i++) {
-				deviationSum[i] = Math.abs(median - getUtilizationHistory().get(i));
+				deviationSum[i] = Math.abs(median - utilizationHistory.get(i));
 			}
 			mad = MathUtil.median(deviationSum);
 		}
@@ -117,17 +129,17 @@ public class PowerVm extends Vm {
 	/**
 	 * Gets the utilization mean in percents.
 	 * 
-	 * @return the utilization mean in MIPS
+	 * @return the utilization mean
 	 */
-	public double getUtilizationMean() {
+	public double getUtilizationMean(List<Double> utilizationHistory) {
 		double mean = 0;
-		if (!getUtilizationHistory().isEmpty()) {
+		if (!utilizationHistory.isEmpty()) {
 			int n = HISTORY_LENGTH;
-			if (HISTORY_LENGTH > getUtilizationHistory().size()) {
-				n = getUtilizationHistory().size();
+			if (HISTORY_LENGTH > utilizationHistory.size()) {
+				n = utilizationHistory.size();
 			}
 			for (int i = 0; i < n; i++) {
-				mean += getUtilizationHistory().get(i);
+				mean += utilizationHistory.get(i);
 			}
 			mean /= n;
 		}
@@ -135,20 +147,20 @@ public class PowerVm extends Vm {
 	}
 
 	/**
-	 * Gets the utilization variance in MIPS.
+	 * Gets the utilization variance.
 	 * 
-	 * @return the utilization variance in MIPS
+	 * @return the utilization variance
 	 */
-	public double getUtilizationVariance() {
-		double mean = getUtilizationMean();
+	public double getUtilizationVariance(List<Double> utilizationHistory) {
+		double mean = getUtilizationMean(utilizationHistory);
 		double variance = 0;
-		if (!getUtilizationHistory().isEmpty()) {
+		if (!utilizationHistory.isEmpty()) {
 			int n = HISTORY_LENGTH;
-			if (HISTORY_LENGTH > getUtilizationHistory().size()) {
-				n = getUtilizationHistory().size();
+			if (HISTORY_LENGTH > utilizationHistory.size()) {
+				n = utilizationHistory.size();
 			}
 			for (int i = 0; i < n; i++) {
-				double tmp = getUtilizationHistory().get(i) * getMips() - mean;
+				double tmp = utilizationHistory.get(i) * getMips() - mean;
 				variance += tmp * tmp;
 			}
 			variance /= n;
@@ -161,10 +173,24 @@ public class PowerVm extends Vm {
 	 * 
 	 * @param utilization the CPU utilization percentage to add
 	 */
-	public void addUtilizationHistoryValue(final double utilization) {
-		getUtilizationHistory().add(0, utilization);
-		if (getUtilizationHistory().size() > HISTORY_LENGTH) {
-			getUtilizationHistory().remove(HISTORY_LENGTH);
+	public void addUtilizationHistoryValueCpu(final double utilization) {
+		getUtilizationHistoryCpu().add(0, utilization);
+		if (getUtilizationHistoryCpu().size() > HISTORY_LENGTH) {
+			getUtilizationHistoryCpu().remove(HISTORY_LENGTH);
+		}
+	}
+
+	public void addUtilizationHistoryValueRam(final double utilization) {
+		getUtilizationHistoryRam().add(0, utilization);
+		if (getUtilizationHistoryRam().size() > HISTORY_LENGTH) {
+			getUtilizationHistoryRam().remove(HISTORY_LENGTH);
+		}
+	}
+
+	public void addUtilizationHistoryValueBw(final double utilization) {
+		getUtilizationHistoryBw().add(0, utilization);
+		if (getUtilizationHistoryBw().size() > HISTORY_LENGTH) {
+			getUtilizationHistoryBw().remove(HISTORY_LENGTH);
 		}
 	}
 
@@ -173,8 +199,16 @@ public class PowerVm extends Vm {
 	 * 
 	 * @return the CPU utilization percentage history
 	 */
-	protected List<Double> getUtilizationHistory() {
-		return utilizationHistory;
+	protected List<Double> getUtilizationHistoryCpu() {
+		return utilizationHistoryCpu;
+	}
+
+	public List<Double> getUtilizationHistoryRam() {
+		return utilizationHistoryRam;
+	}
+
+	public List<Double> getUtilizationHistoryBw() {
+		return utilizationHistoryBw;
 	}
 
 	/**

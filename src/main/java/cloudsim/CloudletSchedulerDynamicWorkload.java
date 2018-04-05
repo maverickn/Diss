@@ -151,6 +151,24 @@ public class CloudletSchedulerDynamicWorkload extends CloudletSchedulerTimeShare
 	}
 
 	@Override
+	public double getTotalUtilizationOfRam(double time) {
+		double totalUtilization = 0;
+		for (ResCloudlet rcl : getCloudletExecList()) {
+			totalUtilization += rcl.getCloudlet().getUtilizationOfRam(time);
+		}
+		return totalUtilization;
+	}
+
+	@Override
+	public double getTotalUtilizationOfBw(double time) {
+		double totalUtilization = 0;
+		for (ResCloudlet rcl : getCloudletExecList()) {
+			totalUtilization += rcl.getCloudlet().getUtilizationOfBw(time);
+		}
+		return totalUtilization;
+	}
+
+	@Override
 	public List<Double> getCurrentRequestedMips() {
 		if (getCachePreviousTime() == getPreviousTime()) {
 			return getCacheCurrentRequestedMips();

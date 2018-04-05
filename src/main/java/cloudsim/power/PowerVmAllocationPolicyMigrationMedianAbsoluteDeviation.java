@@ -133,7 +133,7 @@ public class PowerVmAllocationPolicyMigrationMedianAbsoluteDeviation extends
 	 * @return the host utilization MAD
 	 */
 	protected double getHostUtilizationMad(PowerHostUtilizationHistory host) throws IllegalArgumentException {
-		double[] data = host.getUtilizationHistory();
+		double[] data = host.getUtilizationHistoryCpu();
 		if (MathUtil.countNonZeroBeginning(data) >= 12) { // 12 has been suggested as a safe value
 			return MathUtil.mad(data);
 		}
