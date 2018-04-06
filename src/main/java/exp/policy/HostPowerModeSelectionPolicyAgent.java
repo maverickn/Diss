@@ -322,7 +322,12 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * @return new Q-value
      */
     private double getNewQValue(double penalty, double estimateOptimalFutureValue) {
-        return ((1 - learningRate) * previousQValue + learningRate * (penalty + discountFactor * estimateOptimalFutureValue));
+        double qValue = ((1 - learningRate) * previousQValue + learningRate * (penalty + discountFactor * estimateOptimalFutureValue));
+        if (Double.isInfinite(qValue)) {
+            return Double.MAX_VALUE;
+        } else {
+            return qValue;
+        }
     }
 
     /**
@@ -331,7 +336,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * @param learningRate the learning rate
      */
     public void setLearningRate(double learningRate) {
-        if (learningRate < 0 || learningRate > 1) {
+        if (learningRate <= 0 || learningRate > 1) {
             throw new IllegalArgumentException("Learning rate must be between 0 and 1");
         } else {
             this.learningRate = learningRate;
