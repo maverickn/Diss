@@ -15,7 +15,8 @@
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Select a config file"/>
+          <text value="Вибрати файл"/>
+          <toolTipText value="Вибрати конфігураційний файл"/>
         </properties>
       </component>
       <component id="2ffad" class="javax.swing.JLabel" binding="fileNameLabel">
@@ -59,7 +60,7 @@
         </constraints>
         <properties>
           <model/>
-          <toolTipText value="Select policy"/>
+          <toolTipText value="Вибрати алгоритм"/>
         </properties>
       </component>
       <component id="c3b8c" class="javax.swing.JButton" binding="runButton" default-binding="true">
@@ -67,7 +68,8 @@
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Run"/>
+          <text value="Запуск"/>
+          <toolTipText value="Запуск моделювання"/>
         </properties>
       </component>
       <component id="9fa5b" class="javax.swing.JLabel" binding="processingLabel">
@@ -83,7 +85,7 @@
           <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
-          <text value="Plot saved datasets"/>
+          <text value="Вивести збережені дані"/>
         </properties>
       </component>
     </children>

@@ -32,7 +32,7 @@ public class Runner {
                 VmAllocationPolicyLocalRegression vaplr = new VmAllocationPolicyLocalRegression(hostList, pvsp, 1.2, ParseConfig.schedulingInterval, fbvsp);
 
                 vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower, pvsp, vaplr, hostList);
-                policyName += " lr=" + ParseConfig.learningRate + " df=" + ParseConfig.discountFactor + " cs=" + ParseConfig.cofImportanceSla + " cp=" + ParseConfig.cofImportancePower;
+                policyName += " " + ParseConfig.learningRate + " " + ParseConfig.discountFactor + " " + ParseConfig.cofImportanceSla + " " + ParseConfig.cofImportancePower;
                 start(experimentName, vap, policyName);
                 break;
             case "Npa":

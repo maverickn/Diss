@@ -9,9 +9,12 @@ import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYItemRenderer;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.chart.renderer.xy.XYShapeRenderer;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.util.ShapeUtilities;
 import org.json.simple.parser.ParseException;
 import exp.policy.HostPowerModeSelectionPolicyAgent;
 
@@ -23,6 +26,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Main {
     private JPanel mainPanel;
@@ -61,6 +65,18 @@ public class Main {
         setUpComboBox();
         setUpCharts();
 
+        UIManager.put("FileChooser.lookInLabelText", "Директорія:");
+        UIManager.put("FileChooser.upFolderToolTipText", "На рівень вище");
+        UIManager.put("FileChooser.newFolderToolTipText", "Створити нову директорію");
+        UIManager.put("FileChooser.listViewButtonToolTipText", "Список");
+        UIManager.put("FileChooser.detailsViewButtonToolTipText", "Деталі");
+        UIManager.put("FileChooser.fileNameLabelText", "Ім'я файлу:");
+        UIManager.put("FileChooser.filesOfTypeLabelText", "Тип файлу:");
+        UIManager.put("FileChooser.openButtonText", "Відкрити");
+        UIManager.put("FileChooser.openButtonToolTipText", "Відкрити вибраний файл");
+        UIManager.put("FileChooser.cancelButtonText", "Відмінити");
+        UIManager.put("FileChooser.cancelButtonToolTipText", "Відмінити вибір файлу");
+
         frame.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {}
@@ -90,9 +106,10 @@ public class Main {
             @Override
             public void actionPerformed(ActionEvent e) {
                 JFileChooser jfc = new JFileChooser(FileSystemView.getFileSystemView().getHomeDirectory());
-                jfc.setDialogTitle("Select a config file");
+                jfc.setDialogTitle("Виберіть конфігураційний файл");
+                jfc.setCurrentDirectory(new File("."));
                 jfc.setAcceptAllFileFilterUsed(false);
-                FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON files", "json");
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("JSON файли", "json");
                 jfc.addChoosableFileFilter(filter);
                 int returnValue = jfc.showOpenDialog(null);
                 if (returnValue == JFileChooser.APPROVE_OPTION) {
@@ -116,18 +133,18 @@ public class Main {
                 try {
                     ParseConfig.getData(selectedFile.getAbsolutePath());
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(frame, "Config file not found.\n" + getExceptionMessage(ex),
-                            "Config file not found", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Конфігураційний файл не знайдено.\n" + getExceptionMessage(ex),
+                            "Конфігураційний файл не знайдено", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
                 } catch (ParseException ex) {
-                    JOptionPane.showMessageDialog(frame, "Catching exception while parsing a config file.\n" + getExceptionMessage(ex),
-                            "Parse exception", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Помилка під час читання конфігураційного файлу.\n" + getExceptionMessage(ex),
+                            "Помилка під час читання конфігураційного файлу", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, "Catching exception:\n" + getExceptionMessage(ex),
-                            "Exception", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Помилка:\n" + getExceptionMessage(ex),
+                            "Помилка", JOptionPane.ERROR_MESSAGE);
                     processingLabel.setText("");
                     return;
                 }
@@ -135,18 +152,18 @@ public class Main {
                     String policyName = comboBox.getSelectedItem().toString();
                     new Runner(ParseConfig.inputFolder, ParseConfig.experimentName, policyName);
                     if (policyName.equals("Qla")) {
-                        policyName += " lr=" + ParseConfig.learningRate + " df=" + ParseConfig.discountFactor + " cs=" + ParseConfig.cofImportanceSla + " cp=" + ParseConfig.cofImportancePower;
+                        policyName += " " + ParseConfig.learningRate + " " + ParseConfig.discountFactor + " " + ParseConfig.cofImportanceSla + " " + ParseConfig.cofImportancePower;
                     }
                     List<Double> timeList = HostPowerModeSelectionPolicyAgent.getTimeList();
                     List<Double> slaList = HostPowerModeSelectionPolicyAgent.getSlaViolationTimeList();
                     List<Double> powerList = HostPowerModeSelectionPolicyAgent.getPowerConsumptionList();
                     List<Double> migrationCountList = HostPowerModeSelectionPolicyAgent.getMigrationCountList();
                     plotCharts(policyName, timeList, slaList, powerList, migrationCountList);
-                    processingLabel.setText("Done!");
+                    processingLabel.setText("Готово!");
                     frame.toFront();
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(frame, "Simulation terminated! Catching exception:\n" + getExceptionMessage(ex),
-                            "Exception", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Моделювання зупинено! Помилка:\n" + getExceptionMessage(ex),
+                            "Помилка", JOptionPane.ERROR_MESSAGE);
                     CloudSim.terminateSimulation();
                     processingLabel.setText("");
                 }
@@ -158,7 +175,7 @@ public class Main {
             public void mousePressed(MouseEvent e) {
                 super.mousePressed(e);
                 if (comboBox.getSelectedItem() != null) {
-                    processingLabel.setText("Processing...");
+                    processingLabel.setText("Моделювання...");
                 }
             }
         });
@@ -170,8 +187,8 @@ public class Main {
                 try {
                     plotSavedDatasets();
                 } catch (IOException ex) {
-                    JOptionPane.showMessageDialog(frame, "File not found.\n" + getExceptionMessage(ex),
-                            "File not found", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(frame, "Файл не знайдено.\n" + getExceptionMessage(ex),
+                            "Файл не знайдено", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });
@@ -312,9 +329,12 @@ public class Main {
     }
 
     private void setUpCharts() {
-        final JFreeChart slaChart = ChartFactory.createXYLineChart("SLA violation time","Time, seconds", "SLA Violation Time, seconds",
+        final JFreeChart slaChart = ChartFactory.createXYLineChart("Час порушення вимог SLA","Час, секунди", "Час поруш. вимог SLA, сек.",
                 null, PlotOrientation.VERTICAL, true, true, false);
         slaPlot = slaChart.getXYPlot();
+        slaPlot.setBackgroundPaint(Color.WHITE);
+        slaPlot.setDomainGridlinePaint(Color.BLACK);
+        slaPlot.setRangeGridlinePaint(Color.BLACK);
         final ValueAxis axis1 = slaPlot.getDomainAxis();
         axis1.setAutoRange(true);
         final NumberAxis rangeAxis1 = new NumberAxis("Range Axis 1");
@@ -323,9 +343,12 @@ public class Main {
         slaPanel.add(slaChartPanel);
         slaChartPanel.setDomainZoomable(true);
 
-        final JFreeChart powerChart = ChartFactory.createXYLineChart("Power consumption","Time, seconds", "Power consumption, kWh",
+        final JFreeChart powerChart = ChartFactory.createXYLineChart("Споживання електроенергії","Час, секунди", "Спожив. ел. енергії, кВт×год",
                 null, PlotOrientation.VERTICAL, true, true, false);
         powerPlot = powerChart.getXYPlot();
+        powerPlot.setBackgroundPaint(Color.WHITE);
+        powerPlot.setDomainGridlinePaint(Color.BLACK);
+        powerPlot.setRangeGridlinePaint(Color.BLACK);
         final ValueAxis axis2 = powerPlot.getDomainAxis();
         axis2.setAutoRange(true);
         final NumberAxis rangeAxis2 = new NumberAxis("Range Axis 2");
@@ -334,9 +357,12 @@ public class Main {
         powerPanel.add(powerChartPanel);
         powerChartPanel.setDomainZoomable(true);
 
-        final JFreeChart migrationChart = ChartFactory.createXYLineChart("Migration count","Time, seconds", "Migration count",
+        final JFreeChart migrationChart = ChartFactory.createXYLineChart("Кількість міграцій ВМ","Час, секунди", "К-сть міграцій ВМ",
                 null, PlotOrientation.VERTICAL, true, true, false);
         migrationPlot = migrationChart.getXYPlot();
+        migrationPlot.setBackgroundPaint(Color.WHITE);
+        migrationPlot.setDomainGridlinePaint(Color.BLACK);
+        migrationPlot.setRangeGridlinePaint(Color.BLACK);
         final ValueAxis axis3 = migrationPlot.getDomainAxis();
         axis3.setAutoRange(true);
         final NumberAxis rangeAxis3 = new NumberAxis("Range Axis 3");
