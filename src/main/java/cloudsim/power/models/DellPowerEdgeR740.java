@@ -1,6 +1,4 @@
-package exp.models.power;
-
-import cloudsim.power.models.PowerModelSpecPower;
+package cloudsim.power.models;
 
 public class DellPowerEdgeR740 extends PowerModelSpecPower {
 

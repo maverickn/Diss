@@ -8,7 +8,7 @@ import cloudsim.power.*;
 import java.text.DecimalFormat;
 import java.util.*;
 
-public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigration {
+public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrationAgent {
 
     /**
      * The learning rate
@@ -83,7 +83,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      * @param hostList the host list
      */
     public HostPowerModeSelectionPolicyAgent(double learningRate, double discountFactor, double cofImportanceSla, double cofImportancePower,
-                                             PowerVmSelectionPolicy vmSelectionPolicy, VmAllocationPolicyLocalRegression vmAllocationPolicy, List<? extends Host> hostList) {
+                                             PowerVmSelectionPolicy vmSelectionPolicy, PowerVmAllocationPolicyMigrationLocalRegression vmAllocationPolicy, List<? extends Host> hostList) {
         super(hostList, vmSelectionPolicy, vmAllocationPolicy);
         setLearningRate(learningRate);
         setDiscountFactor(discountFactor);

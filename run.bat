@@ -1,1 +1,1 @@
-java -cp target/Diss-1.0-jar-with-dependencies.jar exp.Main
+java -cp classes/artifacts/Diss_jar/Diss.jar exp.Main

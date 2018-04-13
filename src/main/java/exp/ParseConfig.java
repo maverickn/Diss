@@ -1,7 +1,6 @@
 package exp;
 
-import exp.models.power.*;
-import cloudsim.power.models.PowerModel;
+import cloudsim.power.models.*;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;

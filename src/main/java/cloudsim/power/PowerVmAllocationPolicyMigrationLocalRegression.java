@@ -106,7 +106,7 @@ public class PowerVmAllocationPolicyMigrationLocalRegression extends PowerVmAllo
 	 * @return true, if is host over utilized; false otherwise
 	 */
 	@Override
-	protected boolean isHostOverUtilized(PowerHost host) {
+	public boolean isHostOverUtilized(PowerHost host) {
 		PowerHostUtilizationHistory _host = (PowerHostUtilizationHistory) host;
 		return (isHostOverUtilizedBy(_host, _host.getUtilizationHistoryCpu()) ||
 				isHostOverUtilizedBy(_host, _host.getUtilizationHistoryRam()) ||

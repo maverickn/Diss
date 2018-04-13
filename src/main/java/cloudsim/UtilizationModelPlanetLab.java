@@ -1,6 +1,4 @@
-package exp.models.utilization;
-
-import cloudsim.UtilizationModel;
+package cloudsim;
 
 import java.io.BufferedReader;
 import java.io.FileReader;

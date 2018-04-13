@@ -26,25 +26,25 @@ public class Runner {
         VmAllocationPolicy vap;
         switch (policyName) {
             case "Qla":
-                init(inputFolder + "/" + experimentName, true);
+                init(inputFolder + "/" + experimentName);
                 PowerVmSelectionPolicy pvsp = new PowerVmSelectionPolicyMinimumMigrationTime();
                 PowerVmAllocationPolicyMigrationAbstract fbvsp = new PowerVmAllocationPolicyMigrationStaticThreshold(hostList, pvsp, 0.7);
-                VmAllocationPolicyLocalRegression vaplr = new VmAllocationPolicyLocalRegression(hostList, pvsp, 1.2, ParseConfig.schedulingInterval, fbvsp);
+                PowerVmAllocationPolicyMigrationLocalRegression vaplr = new PowerVmAllocationPolicyMigrationLocalRegression(hostList, pvsp, 1.2, ParseConfig.schedulingInterval, fbvsp);
 
                 vap = new HostPowerModeSelectionPolicyAgent(ParseConfig.learningRate, ParseConfig.discountFactor, ParseConfig.cofImportanceSla, ParseConfig.cofImportancePower, pvsp, vaplr, hostList);
                 policyName += " " + ParseConfig.learningRate + " " + ParseConfig.discountFactor + " " + ParseConfig.cofImportanceSla + " " + ParseConfig.cofImportancePower;
                 start(experimentName, vap, policyName);
                 break;
             case "Npa":
-                nonPowerAwareModelling(inputFolder, experimentName, policyName, true);
+                nonPowerAwareModelling(inputFolder, experimentName, policyName);
                 break;
             case "Dvfs":
-                init(inputFolder + "/" + experimentName, true);
+                init(inputFolder + "/" + experimentName);
                 vap = new VmAllocationPolicyNonPowerAware(hostList);
                 start(experimentName, vap, policyName);
                 break;
             default:
-                init(inputFolder + "/" + experimentName,false);
+                init(inputFolder + "/" + experimentName);
                 vap = getVmAllocationPolicy(policyName.split(" ")[0], policyName.split(" ")[1]);
                 start(experimentName, vap, policyName);
                 break;
@@ -90,11 +90,11 @@ public class Runner {
         writer.close();
     }
 
-    private void init(String experimentFolder, boolean utilizationModel) throws Exception {
+    private void init(String experimentFolder) throws Exception {
         CloudSim.init(1, Calendar.getInstance(), false);
         broker = SetupEntities.createBroker();
         int brokerId = broker.getId();
-        cloudletList = SetupEntities.createCloudletList(brokerId, experimentFolder, utilizationModel);
+        cloudletList = SetupEntities.createCloudletList(brokerId, experimentFolder);
         vmList = SetupEntities.createVmList(brokerId, cloudletList.size());
         hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
     }
@@ -115,7 +115,7 @@ public class Runner {
         Log.printLine("Finished " + experimentName);
     }
 
-    private void nonPowerAwareModelling(String inputFolder, String experimentName, String policyName, boolean utilizationModel) throws Exception {
+    private void nonPowerAwareModelling(String inputFolder, String experimentName, String policyName) throws Exception {
         initLogOutput(experimentName, policyName);
         Log.printLine("Starting " + experimentName);
 
@@ -124,7 +124,7 @@ public class Runner {
         DatacenterBroker broker = SetupEntities.createBroker();
         int brokerId = broker.getId();
 
-        List<Cloudlet> cloudletList = SetupEntities.createCloudletList(brokerId, inputFolder + "/" + experimentName, utilizationModel);
+        List<Cloudlet> cloudletList = SetupEntities.createCloudletList(brokerId, inputFolder + "/" + experimentName);
         List<Vm> vmList = SetupEntities.createVmList(brokerId, cloudletList.size());
         List<PowerHost> hostList = SetupEntities.createHostList(ParseConfig.hostsCount);
 
@@ -157,23 +157,23 @@ public class Runner {
         switch (vmAllocationPolicyName) {
             case "Iqr":
                 vmAllocationPolicy =
-                        new VmAllocationPolicyInterQuartileRange(hostList, vmSelectionPolicy, 1.5, fallbackVmSelectionPolicy);
+                        new PowerVmAllocationPolicyMigrationInterQuartileRange(hostList, vmSelectionPolicy, 1.5, fallbackVmSelectionPolicy);
                 break;
             case "Mad":
                 vmAllocationPolicy =
-                        new VmAllocationPolicyMedianAbsoluteDeviation(hostList, vmSelectionPolicy, 2.5, fallbackVmSelectionPolicy);
+                        new PowerVmAllocationPolicyMigrationMedianAbsoluteDeviation(hostList, vmSelectionPolicy, 2.5, fallbackVmSelectionPolicy);
                 break;
             case "Lr":
                 vmAllocationPolicy =
-                        new VmAllocationPolicyLocalRegression(hostList, vmSelectionPolicy, 1.2, ParseConfig.schedulingInterval, fallbackVmSelectionPolicy);
+                        new PowerVmAllocationPolicyMigrationLocalRegression(hostList, vmSelectionPolicy, 1.2, ParseConfig.schedulingInterval, fallbackVmSelectionPolicy);
                 break;
             case "Lrr":
                 vmAllocationPolicy =
-                        new VmAllocationPolicyLocalRegressionRobust(hostList, vmSelectionPolicy, 1.2, ParseConfig.schedulingInterval, fallbackVmSelectionPolicy);
+                        new PowerVmAllocationPolicyMigrationLocalRegressionRobust(hostList, vmSelectionPolicy, 1.2, ParseConfig.schedulingInterval, fallbackVmSelectionPolicy);
                 break;
             case "Thr":
                 vmAllocationPolicy =
-                        new VmAllocationPolicyStaticThreshold(hostList, vmSelectionPolicy, 0.8);
+                        new PowerVmAllocationPolicyMigrationStaticThreshold(hostList, vmSelectionPolicy, 0.8);
                 break;
         }
         return vmAllocationPolicy;

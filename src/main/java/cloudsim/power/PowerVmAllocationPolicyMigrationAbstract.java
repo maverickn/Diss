@@ -23,6 +23,7 @@ import cloudsim.Vm;
 import cloudsim.core.CloudSim;
 import cloudsim.power.lists.PowerVmList;
 import cloudsim.util.ExecutionTimeMeasurer;
+import exp.policy.HostPowerModeSelectionPolicyAgent;
 
 /**
  * An abstract power-aware VM allocation policy that dynamically optimizes the VM
@@ -116,6 +117,9 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 	 */
 	@Override
 	public List<Map<String, Object>> optimizeAllocation(List<? extends Vm> vmList) {
+		HostPowerModeSelectionPolicyAgent.getTimeList().add(CloudSim.clock());
+		HostPowerModeSelectionPolicyAgent.getSlaViolationTime(getHostList());
+		HostPowerModeSelectionPolicyAgent.getTotalPowerAndMigrationCount(getHostList());
 		ExecutionTimeMeasurer.start("optimizeAllocationTotal");
 
 		ExecutionTimeMeasurer.start("optimizeAllocationHostSelection");
@@ -560,7 +564,7 @@ public abstract class PowerVmAllocationPolicyMigrationAbstract extends PowerVmAl
 			PowerHost host = (PowerHost) map.get("host");
 			if (!host.vmCreate(vm)) {
 				Log.printConcatLine("Couldn't restore VM #", vm.getId(), " on host #", host.getId());
-				System.exit(0);
+				//System.exit(0);
 			}
 			getVmTable().put(vm.getUid(), host);
 		}
