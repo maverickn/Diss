@@ -101,9 +101,15 @@ public class PowerVmAllocationPolicyMigrationInterQuartileRange extends
 	@Override
 	protected boolean isHostOverUtilized(PowerHost host) {
 		PowerHostUtilizationHistory _host = (PowerHostUtilizationHistory) host;
+		return (isHostOverUtilizedBy(host, _host.getUtilizationHistoryCpu()) ||
+				isHostOverUtilizedBy(host, _host.getUtilizationHistoryRam()) ||
+				isHostOverUtilizedBy(host, _host.getUtilizationHistoryBw()));
+	}
+
+	protected boolean isHostOverUtilizedBy(PowerHost host, double[] utilizationHistory) {
 		double upperThreshold = 0;
 		try {
-			upperThreshold = 1 - getSafetyParameter() * getHostUtilizationIqr(_host);
+			upperThreshold = 1 - getSafetyParameter() * getHostUtilizationIqr(utilizationHistory);
 		} catch (IllegalArgumentException e) {
 			return getFallbackVmAllocationPolicy().isHostOverUtilized(host);
 		}
@@ -117,13 +123,13 @@ public class PowerVmAllocationPolicyMigrationInterQuartileRange extends
 	}
 
 	/**
-	 * Gets the host CPU utilization percentage IQR.
+	 * Gets the host utilization IQR.
 	 * 
-	 * @param host the host
-	 * @return the host CPU utilization percentage IQR
+	 * @param utilizationHistory the utilization history
+	 * @return the host utilization IQR
 	 */
-	protected double getHostUtilizationIqr(PowerHostUtilizationHistory host) throws IllegalArgumentException {
-		double[] data = host.getUtilizationHistoryCpu();
+	protected double getHostUtilizationIqr(double[] utilizationHistory) throws IllegalArgumentException {
+		double[] data = utilizationHistory;
 		if (MathUtil.countNonZeroBeginning(data) >= 12) { // 12 has been suggested as a safe value
 			return MathUtil.iqr(data);
 		}
