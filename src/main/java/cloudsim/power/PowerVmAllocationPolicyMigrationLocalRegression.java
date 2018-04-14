@@ -131,9 +131,6 @@ public class PowerVmAllocationPolicyMigrationLocalRegression extends PowerVmAllo
 		double migrationIntervals = Math.ceil(getMaximumVmMigrationTime(host) / getSchedulingInterval());
 		double predictedUtilization = estimates[0] + estimates[1] * (length + migrationIntervals);
 		predictedUtilization *= getSafetyParameter();
-
-		addHistoryEntry(host, predictedUtilization);
-
 		return predictedUtilization >= 1;
 	}
 

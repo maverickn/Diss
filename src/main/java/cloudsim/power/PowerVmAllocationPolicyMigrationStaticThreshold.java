@@ -60,12 +60,33 @@ public class PowerVmAllocationPolicyMigrationStaticThreshold extends PowerVmAllo
 	 */
 	@Override
 	protected boolean isHostOverUtilized(PowerHost host) {
-		addHistoryEntry(host, getUtilizationThreshold());
+		return (isHostOverUtilizedCpu(host) || isHostOverUtilizedRam(host) || isHostOverUtilizedBw(host));
+	}
+
+	protected boolean isHostOverUtilizedCpu(PowerHost host) {
 		double totalRequestedMips = 0;
 		for (Vm vm : host.getVmList()) {
 			totalRequestedMips += vm.getCurrentRequestedTotalMips();
 		}
 		double utilization = totalRequestedMips / host.getTotalMips();
+		return utilization > getUtilizationThreshold();
+	}
+
+	protected boolean isHostOverUtilizedRam(PowerHost host) {
+		double totalRequestedRam = 0;
+		for (Vm vm : host.getVmList()) {
+			totalRequestedRam += vm.getCurrentRequestedRam();
+		}
+		double utilization = totalRequestedRam / host.getRam();
+		return utilization > getUtilizationThreshold();
+	}
+
+	protected boolean isHostOverUtilizedBw(PowerHost host) {
+		double totalRequestedBw = 0;
+		for (Vm vm : host.getVmList()) {
+			totalRequestedBw += vm.getCurrentRequestedBw();
+		}
+		double utilization = totalRequestedBw / host.getBw();
 		return utilization > getUtilizationThreshold();
 	}
 

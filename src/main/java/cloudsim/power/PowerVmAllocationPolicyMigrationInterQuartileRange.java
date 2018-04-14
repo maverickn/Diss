@@ -113,7 +113,6 @@ public class PowerVmAllocationPolicyMigrationInterQuartileRange extends
 		} catch (IllegalArgumentException e) {
 			return getFallbackVmAllocationPolicy().isHostOverUtilized(host);
 		}
-		addHistoryEntry(host, upperThreshold);
 		double totalRequestedMips = 0;
 		for (Vm vm : host.getVmList()) {
 			totalRequestedMips += vm.getCurrentRequestedTotalMips();
