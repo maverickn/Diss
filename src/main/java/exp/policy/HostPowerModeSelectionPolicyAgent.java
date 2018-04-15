@@ -337,7 +337,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     public void setLearningRate(double learningRate) {
         if (learningRate <= 0 || learningRate > 1) {
-            throw new IllegalArgumentException("Learning rate must be between 0 and 1");
+            throw new IllegalArgumentException("Швидкість навчання має бути між 0 та 1");
         } else {
             this.learningRate = learningRate;
         }
@@ -350,7 +350,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     public void setDiscountFactor(double discountFactor) {
         if (discountFactor < 0 || discountFactor > 1) {
-            throw new IllegalArgumentException("Discount factor must be between 0 and 1");
+            throw new IllegalArgumentException("Коефіцієнт знецінювання має бути між 0 та 1");
         } else {
             this.discountFactor = discountFactor;
         }
@@ -363,7 +363,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     public void setCofImportanceSla(double cofImportanceSla) {
         if (cofImportanceSla < 0 || cofImportanceSla > 1) {
-            throw new IllegalArgumentException("Coefficient of SLA importance must be between 0 and 1");
+            throw new IllegalArgumentException("Коефіцієнт що визначає відносну важливість штрафу за порушення SLA має бути між 0 та 1");
         } else {
             this.cofImportanceSla = cofImportanceSla;
         }
@@ -376,7 +376,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     public void setCofImportancePower(double cofImportancePower) {
         if (cofImportancePower < 0 || cofImportancePower > 1) {
-            throw new IllegalArgumentException("Coefficient of power consumption importance must be between 0 and 1");
+            throw new IllegalArgumentException("Коефіцієнт що визначає відносну важливість штрафу за споживання електроенергії має бути між 0 та 1");
         } else {
             this.cofImportancePower = cofImportancePower;
         }

@@ -5,8 +5,8 @@
 
   "_schedulingInterval_comment": "seconds",
   "schedulingInterval": 300,
-  "_simulationLimit_comment": "1 month",
-  "simulationLimit": 2505600,
+  "_simulationLimit_comment": "9 days",
+  "simulationLimit": 777600,
 
   "learningRate": 0.5,
   "discountFactor": 0.5,

@@ -1,1 +1,1 @@
-java -cp classes/artifacts/Diss_jar/Diss.jar exp.Main
+java -cp target/Diss.jar exp.Main
