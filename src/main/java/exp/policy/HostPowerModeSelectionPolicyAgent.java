@@ -4,6 +4,7 @@ import cloudsim.Host;
 import cloudsim.HostDynamicWorkload;
 import cloudsim.HostStateHistoryEntry;
 import cloudsim.power.*;
+import exp.Runner;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -70,7 +71,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
      */
     private Double previousQValue = 0.0;
 
-    private int cnter = 0;
+    //private int cnter = 0;
 
     /**
      * Instantiates a new HostPowerModeSelectionPolicyAgent.
@@ -100,17 +101,19 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         Random rand = new Random();
         int randomAction = rand.nextInt(5);
 
+        //Runner.printResults2(getHostList());
+
         String state = observeState();
-        System.out.println("state: " + state);
+        //System.out.println("state: " + state);
 
         int stateIndex = saveState(state);
-        System.out.println("stateIndex: " + stateIndex);
+        //System.out.println("stateIndex: " + stateIndex);
 
         double penalty = getPenalty();
-        System.out.println("penalty: " + penalty);
+        //System.out.println("penalty: " + penalty);
 
         double minQValue = Collections.min(getQTable().get(stateIndex));
-        System.out.println("minQValue: " + minQValue);
+        //System.out.println("minQValue: " + minQValue);
 
         /*System.out.println("getSlaViolationTimeList:");
         for (int i = 0; i < getSlaViolationTimeList().size(); i++) {
@@ -143,10 +146,10 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
             actionIndex = rand.nextInt(getActionsList().size());
         }
 
-        System.out.println("actionIndex: " + actionIndex);
+        //System.out.println("actionIndex: " + actionIndex);
 
         double newQvalue = getNewQValue(penalty, minQValue);
-        System.out.println("newQvalue: " + newQvalue);
+        //System.out.println("newQvalue: " + newQvalue);
 
         getQTable().get(stateIndex).set(actionIndex, newQvalue);
         /*for (int i = 0; i < qTable.size(); i++) {
@@ -163,7 +166,7 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         previousQValue = newQvalue;
 
         int powerMode = getActionsList().get(actionIndex);
-        System.out.println("powerMode: " + powerMode);
+        //System.out.println("powerMode: " + powerMode);
 
         /*if (cnter == 4) {
             CloudSim.terminateSimulation();
@@ -205,10 +208,10 @@ public class HostPowerModeSelectionPolicyAgent extends VmAllocationPolicyMigrati
         ramUtilPercent = ramUtilAbsolute / ramTotalAbsolute;
         bwUtilPercent = bwUtilAbsolute / bwTotalAbsolute;
 
-        System.out.println("cpuUtilPercent: " + cpuUtilPercent);
+        /*System.out.println("cpuUtilPercent: " + cpuUtilPercent);
         System.out.println("ramUtilPercent: " + ramUtilPercent);
         System.out.println("bwUtilPercent: " + bwUtilPercent);
-        System.out.println();
+        System.out.println();*/
 
         DecimalFormat df = new DecimalFormat("#.##");
         state = df.format(cpuUtilPercent) + df.format(ramUtilPercent) + df.format(bwUtilPercent);

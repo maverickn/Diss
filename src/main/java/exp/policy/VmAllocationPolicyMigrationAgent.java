@@ -71,8 +71,8 @@ public abstract class VmAllocationPolicyMigrationAgent extends PowerVmAllocation
         List<PowerHostUtilizationHistory> hibernateHosts = getSwitchedOffHosts();
 
         if(actionIdAndHostPowerMode[1] == -1) {
-            System.out.println("Need to poweroff host");
-            System.out.println("Host id " + hostToChangePowerMode.getId());
+            //System.out.println("Need to poweroff host");
+            //System.out.println("Host id " + hostToChangePowerMode.getId());
 
             if(isSwitchedOffHost(hostToChangePowerMode)) {
                 return null;
@@ -90,15 +90,15 @@ public abstract class VmAllocationPolicyMigrationAgent extends PowerVmAllocation
 
             restoreAllocation();
 
-            System.out.println("Finish to poweroff host");
+            //System.out.println("Finish to poweroff host");
 
-            System.out.println("Migration map: " + migrationMap.toString());
+            //System.out.println("Migration map: " + migrationMap.toString());
             //System.exit(0);
 
             return migrationMap;
         } else {
-            System.out.println("Need to poweron host");
-            System.out.println("Host id " + hostToChangePowerMode.getId());
+            //System.out.println("Need to poweron host");
+            //System.out.println("Host id " + hostToChangePowerMode.getId());
 
             if(!isSwitchedOffHost(hostToChangePowerMode)) {
                 return null;
@@ -122,9 +122,9 @@ public abstract class VmAllocationPolicyMigrationAgent extends PowerVmAllocation
 
             restoreAllocation();
 
-            System.out.println("Finish to poweron host");
+            //System.out.println("Finish to poweron host");
 
-            System.out.println("Migration map: " + migrationMap.toString());
+            //System.out.println("Migration map: " + migrationMap.toString());
             //System.exit(0);
 
             return migrationMap;

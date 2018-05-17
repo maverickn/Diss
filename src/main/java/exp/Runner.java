@@ -11,6 +11,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
+import static exp.ParseConfig.experimentName;
+
 public class Runner {
 
     private DatacenterBroker broker;
@@ -89,6 +91,48 @@ public class Runner {
         }
         writer.close();
     }
+
+    /*public static void printResults2(List<HostDynamicWorkload> hosts) {
+        StringBuilder Hdata = new StringBuilder();
+        String delimeter = ",";
+        Hdata.append("HostId;Time;Allocated;Requested;IsActive");
+        Hdata.append("\n");
+        for (Host _host : hosts) {
+            HostDynamicWorkload host = (HostDynamicWorkload) _host;
+            for (HostStateHistoryEntry entry : host.getStateHistory()) {
+                double Allocated = entry.getAllocatedMips();
+                double Requested = entry.getRequestedMips();
+                double Time = entry.getTime();
+                boolean IsActive = entry.isActive();
+                Hdata.append(String.format(host.getId() + delimeter));
+                Hdata.append(String.format("" + Time) + delimeter);
+                Hdata.append(String.format("" + Allocated) + delimeter);
+                Hdata.append(String.format("" + Requested) + delimeter);
+                Hdata.append(String.format("" + IsActive) + delimeter);
+                Hdata.append("\n");
+            }
+        }
+        Hdata.append("\n");
+        writeDataRow(Hdata.toString(), "output/" + experimentName + "_hostsstate.csv");
+    }
+
+    public static void writeDataRow(String data, String outputPath) {
+        File file = new File(outputPath);
+        try {
+            file.createNewFile();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            System.exit(0);
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(file));
+            writer.write(data);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(0);
+        }
+    }*/
 
     private void init(String experimentFolder) throws Exception {
         CloudSim.init(1, Calendar.getInstance(), false);

@@ -299,8 +299,8 @@ public class Main {
         comboBox.setBounds(10,70,150,30);
         comboBox.addItem(null);
         comboBox.addItem("Qla");
-        comboBox.addItem("Npa");
-        comboBox.addItem("Dvfs");
+        //comboBox.addItem("Npa");
+        //comboBox.addItem("Dvfs");
         comboBox.addItem("Iqr Mc");
         comboBox.addItem("Iqr Mmt");
         comboBox.addItem("Iqr Mu");
